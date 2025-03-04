@@ -1,0 +1,60 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="14.0.0" />
+    <PackageReference Include="FluentValidation" Version="11.11.0" />
+    <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.11" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="DTOs\Responses\" />
+    <Folder Include="DTOs\Requests\" />
+    <Folder Include="Helpers\" />
+    <Folder Include="Mappers\" />
+    <Folder Include="Interceptors\" />
+    <Folder Include="Middlewares\" />
+    <Folder Include="Migrations\" />
+    <Folder Include="Repositories\Auth\" />
+    <Folder Include="Repositories\Feedback\" />
+    <Folder Include="Repositories\AuditLog\" />
+    <Folder Include="Repositories\Report\" />
+    <Folder Include="Repositories\Reservation\" />
+    <Folder Include="Repositories\Payment\" />
+    <Folder Include="Repositories\Order\" />
+    <Folder Include="Repositories\Product\" />
+    <Folder Include="Repositories\User\" />
+    <Folder Include="Services\AuditLog\" />
+    <Folder Include="Services\Auth\" />
+    <Folder Include="Services\Feedback\" />
+    <Folder Include="Services\Order\" />
+    <Folder Include="Services\Payment\" />
+    <Folder Include="Services\Product\" />
+    <Folder Include="Services\Report\" />
+    <Folder Include="Services\Reservation\" />
+    <Folder Include="Services\User\" />
+    <Folder Include="Validations\AuditLog\" />
+    <Folder Include="Validations\Auth\" />
+    <Folder Include="Validations\Feedback\" />
+    <Folder Include="Validations\Order\" />
+    <Folder Include="Validations\Payment\" />
+    <Folder Include="Validations\Product\" />
+    <Folder Include="Validations\Report\" />
+    <Folder Include="Validations\Reservation\" />
+    <Folder Include="Validations\User\" />
+  </ItemGroup>
+
+</Project>
