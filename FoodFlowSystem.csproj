@@ -18,19 +18,13 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+    <PackageReference Include="System.Linq" Version="4.3.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="DTOs\Responses\" />
-    <Folder Include="DTOs\Requests\" />
-    <Folder Include="Helpers\" />
-    <Folder Include="Mappers\" />
     <Folder Include="Interceptors\" />
-    <Folder Include="Middlewares\" />
     <Folder Include="Migrations\" />
-    <Folder Include="Repositories\Auth\" />
     <Folder Include="Repositories\Feedback\" />
-    <Folder Include="Repositories\AuditLog\" />
     <Folder Include="Repositories\Report\" />
     <Folder Include="Repositories\Reservation\" />
     <Folder Include="Repositories\Payment\" />
@@ -38,7 +32,6 @@
     <Folder Include="Repositories\Product\" />
     <Folder Include="Repositories\User\" />
     <Folder Include="Services\AuditLog\" />
-    <Folder Include="Services\Auth\" />
     <Folder Include="Services\Feedback\" />
     <Folder Include="Services\Order\" />
     <Folder Include="Services\Payment\" />

@@ -26,10 +26,18 @@ namespace FoodFlowSystem.Entities.Payment
             builder.Property(p => p.OrderID)
                 .IsRequired();
 
+            builder.Property(p => p.ReservationID)
+                .IsRequired();
+
             builder.HasOne(o => o.Order)
                 .WithMany(p => p.Payments)
                 .HasForeignKey(p => p.OrderID)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(r => r.Reservation)
+                .WithMany(p => p.Payments)
+                .HasForeignKey(p => p.ReservationID)
+                .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

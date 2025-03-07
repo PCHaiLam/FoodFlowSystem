@@ -5,6 +5,7 @@ using FoodFlowSystem.Entities.Order;
 using FoodFlowSystem.Entities.Report;
 using FoodFlowSystem.Entities.Reservation;
 using FoodFlowSystem.Entities.Role;
+using FoodFlowSystem.Entities.Token;
 
 namespace FoodFlowSystem.Entities.User
 {
@@ -14,9 +15,9 @@ namespace FoodFlowSystem.Entities.User
         public string Email { get; set; }
         public string HashPassword { get; set; }
         public string Phone { get; set; }
-        public string Status { get; set; }
         public int RoleID { get; set; }
         public RoleEntity Role { get; set; }
+        public ICollection<TokenEntity> Tokens { get; set; }
         public ICollection<ReservationEntity> Reservations { get; set; }
         public ICollection<ReportEntity> Reports { get; set; }
         public ICollection<OrderEntity> Orders { get; set; }

@@ -9,6 +9,9 @@ namespace FoodFlowSystem.Entities.Invoice
         public decimal TotalAmount { get; set; }
         public decimal Discount { get; set; }
         public int GeneratedBy { get; set; }
+        public string Status { get; set; }
+        public decimal PaidAmount { get; set; }
+        public decimal DueAmount { get; set; }
         public int PaymentID { get; set; }
         public int OrderID { get; set; }
         public PaymentEntity Payment { get; set; }

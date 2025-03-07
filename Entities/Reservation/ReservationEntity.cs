@@ -1,4 +1,5 @@
 ﻿using FoodFlowSystem.Entities.Order;
+using FoodFlowSystem.Entities.Payment;
 using FoodFlowSystem.Entities.Table;
 using FoodFlowSystem.Entities.User;
 
@@ -13,5 +14,6 @@ namespace FoodFlowSystem.Entities.Reservation
         public UserEntity User { get; set; }
         public TableEntity Table { get; set; }
         public ICollection<OrderEntity> Orders { get; set; }
+        public ICollection<PaymentEntity> Payments { get; set; }
     }
 }
