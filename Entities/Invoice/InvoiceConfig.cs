@@ -19,6 +19,17 @@ namespace FoodFlowSystem.Entities.Invoice
                 .HasColumnType("decimal(10,2)")
                 .IsRequired();
 
+            builder.Property(i => i.PaidAmount)
+                .HasColumnType("decimal(10,2)")
+                .IsRequired();
+
+            builder.Property(i => i.DueAmount)
+                .HasColumnType("decimal(10,2)")
+                .IsRequired();
+
+            builder.Property(i => i.Status)
+                .IsRequired();
+
             builder.Property(i => i.GeneratedBy)
                 .IsRequired();
 

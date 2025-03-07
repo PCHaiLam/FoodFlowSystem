@@ -4,6 +4,7 @@ using FoodFlowSystem.Data.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FoodFlowSystem.Migrations
 {
     [DbContext(typeof(MssqlDbContext))]
-    partial class MssqlDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250304041556_remove_p_status_User")]
+    partial class remove_p_status_User
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -147,24 +150,14 @@ namespace FoodFlowSystem.Migrations
                     b.Property<decimal>("Discount")
                         .HasColumnType("decimal(10,2)");
 
-                    b.Property<decimal>("DueAmount")
-                        .HasColumnType("decimal(10,2)");
-
                     b.Property<int>("GeneratedBy")
                         .HasColumnType("int");
 
                     b.Property<int>("OrderID")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("PaidAmount")
-                        .HasColumnType("decimal(10,2)");
-
                     b.Property<int>("PaymentID")
                         .HasColumnType("int");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(10,2)");
@@ -263,9 +256,6 @@ namespace FoodFlowSystem.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime");
 
-                    b.Property<bool>("IsDeposit")
-                        .HasColumnType("bit");
-
                     b.Property<int>("OrderID")
                         .HasColumnType("int");
 
@@ -274,17 +264,12 @@ namespace FoodFlowSystem.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
-                    b.Property<int>("ReservationID")
-                        .HasColumnType("int");
-
                     b.Property<string>("Status")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("ID");
 
                     b.HasIndex("OrderID");
-
-                    b.HasIndex("ReservationID");
 
                     b.ToTable("Payments", (string)null);
                 });
@@ -447,36 +432,6 @@ namespace FoodFlowSystem.Migrations
                     b.ToTable("Tables", (string)null);
                 });
 
-            modelBuilder.Entity("FoodFlowSystem.Entities.Token.TokenEntity", b =>
-                {
-                    b.Property<int>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
-
-                    b.Property<string>("AccessToken")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("ExpireAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("RefreshToken")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("UserID")
-                        .HasColumnType("int");
-
-                    b.HasKey("ID");
-
-                    b.HasIndex("UserID");
-
-                    b.ToTable("TokenEntity");
-                });
-
             modelBuilder.Entity("FoodFlowSystem.Entities.User.UserEntity", b =>
                 {
                     b.Property<int>("ID")
@@ -511,13 +466,6 @@ namespace FoodFlowSystem.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("ID");
-
-                    b.HasIndex("Email")
-                        .IsUnique();
-
-                    b.HasIndex("Phone")
-                        .IsUnique()
-                        .HasFilter("[Phone] IS NOT NULL");
 
                     b.HasIndex("RoleID");
 
@@ -624,15 +572,7 @@ namespace FoodFlowSystem.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("FoodFlowSystem.Entities.Reservation.ReservationEntity", "Reservation")
-                        .WithMany("Payments")
-                        .HasForeignKey("ReservationID")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
                     b.Navigation("Order");
-
-                    b.Navigation("Reservation");
                 });
 
             modelBuilder.Entity("FoodFlowSystem.Entities.Product.ProductEntity", b =>
@@ -669,17 +609,6 @@ namespace FoodFlowSystem.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Table");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("FoodFlowSystem.Entities.Token.TokenEntity", b =>
-                {
-                    b.HasOne("FoodFlowSystem.Entities.User.UserEntity", "User")
-                        .WithMany("Tokens")
-                        .HasForeignKey("UserID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
 
                     b.Navigation("User");
                 });
@@ -724,8 +653,6 @@ namespace FoodFlowSystem.Migrations
             modelBuilder.Entity("FoodFlowSystem.Entities.Reservation.ReservationEntity", b =>
                 {
                     b.Navigation("Orders");
-
-                    b.Navigation("Payments");
                 });
 
             modelBuilder.Entity("FoodFlowSystem.Entities.Role.RoleEntity", b =>
@@ -751,8 +678,6 @@ namespace FoodFlowSystem.Migrations
                     b.Navigation("Reports");
 
                     b.Navigation("Reservations");
-
-                    b.Navigation("Tokens");
                 });
 #pragma warning restore 612, 618
         }

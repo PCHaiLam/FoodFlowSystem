@@ -19,6 +19,9 @@ namespace FoodFlowSystem.Entities.User
                 .HasMaxLength(100)
                 .IsRequired();
 
+            builder.HasIndex(u => u.Email)
+                .IsUnique();
+
             builder.Property(u => u.HashPassword)
                 .HasMaxLength(255)
                 .IsRequired();
@@ -26,9 +29,8 @@ namespace FoodFlowSystem.Entities.User
             builder.Property(u => u.Phone)
                 .HasMaxLength(15);
 
-            builder.Property(u => u.Status)
-                .HasMaxLength(30)
-                .IsRequired();
+            builder.HasIndex(u => u.Phone)
+                .IsUnique();
 
             builder.Property(u => u.CreatedAt)
                 .HasColumnType("datetime")
