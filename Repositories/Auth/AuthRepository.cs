@@ -22,5 +22,17 @@ namespace FoodFlowSystem.Repositories.Auth
             var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Email == email && x.HashPassword == password);
             return user;
         }
+
+        public Task<UserEntity> IsExistUserAsync(string input)
+        {
+            if (input.Contains("@"))
+            {
+                return _dbContext.Users.FirstOrDefaultAsync(x => x.Email == input);
+            }
+            else
+            {
+                return _dbContext.Users.FirstOrDefaultAsync(x => x.Phone == input);
+            }
+        }
     }
 }

@@ -21,17 +21,17 @@ namespace FoodFlowSystem.Entities.AuditLog
 
             builder.Property(x => x.RecordID)
                 .HasMaxLength(30)
-                .IsRequired();
+                .IsRequired(false);
 
             builder.Property(x => x.OldValue)
-                .IsRequired();
+                .IsRequired(false);
 
             builder.Property(x => x.NewValue)
-                .IsRequired();
+                .IsRequired(false);
 
             builder.Property(x => x.IPAddress)
                 .HasMaxLength(50)
-                .IsRequired();
+                .IsRequired(false);
 
             builder.Property(x => x.UserAgent)
                 .HasMaxLength(255)

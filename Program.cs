@@ -18,8 +18,13 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-// Add DbContext
-builder.Services.AddDbContext<MssqlDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("MsSqlString")));
+
+//add log
+//builder.Services.AddDbContext<MssqlDbContext>(options =>
+//    options.UseSqlServer("MsSqlString")
+//           .EnableSensitiveDataLogging()
+//           .LogTo(Console.WriteLine)
+//);
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -31,13 +36,14 @@ builder.Services.AddHttpContextAccessor();
 
 // Add Interceptors
 builder.Services.AddSingleton<AuditLogInterceptor>();
+builder.Services.AddSingleton<TimeInterceptor>();
 
 // Add DbContext
 builder.Services.AddDbContext<MssqlDbContext>((serviceProvider, options) =>
 {
+    var timeInterceptor = serviceProvider.GetRequiredService<TimeInterceptor>();
     var interceptor = serviceProvider.GetRequiredService<AuditLogInterceptor>();
     options.UseSqlServer(builder.Configuration.GetConnectionString("MsSqlString"));
-    options.AddInterceptors(interceptor);
 });
 
 //Configuration
@@ -84,6 +90,9 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:SecretKey"]))
     };
 });
+
+//register HttpClient to call other services
+builder.Services.AddHttpClient();
 
 //mapper
 builder.Services.AddAutoMapper(typeof(AuthMapper));
