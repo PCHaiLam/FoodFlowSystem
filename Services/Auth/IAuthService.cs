@@ -1,4 +1,5 @@
 ﻿using FoodFlowSystem.DTOs.Requests.Auth;
+using FoodFlowSystem.Entities.User;
 
 namespace FoodFlowSystem.Services.Auth
 {

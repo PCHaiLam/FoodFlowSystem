@@ -19,9 +19,14 @@ namespace FoodFlowSystem.Data.DbContexts
     public class MssqlDbContext : DbContext
     {
         private readonly AuditLogInterceptor _auditLogInterceptor;
-        public MssqlDbContext(DbContextOptions<MssqlDbContext> options, AuditLogInterceptor auditLogInterceptor) : base(options)
+        private readonly TimeInterceptor _timeInterceptor;
+        public MssqlDbContext(
+            DbContextOptions<MssqlDbContext> options, 
+            AuditLogInterceptor auditLogInterceptor,
+            TimeInterceptor timeInterceptor) : base(options)
         {
             _auditLogInterceptor = auditLogInterceptor;
+            _timeInterceptor = timeInterceptor;
         }
 
         public DbSet<UserEntity> Users { get; set; }
@@ -62,6 +67,7 @@ namespace FoodFlowSystem.Data.DbContexts
             base.OnConfiguring(optionsBuilder);
 
             optionsBuilder.AddInterceptors(_auditLogInterceptor);
+            optionsBuilder.AddInterceptors(_timeInterceptor);
         }
     }
 }

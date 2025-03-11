@@ -26,10 +26,6 @@ namespace FoodFlowSystem.Entities.User
             builder.Property(u => u.Phone)
                 .HasMaxLength(15);
 
-            builder.Property(u => u.Status)
-                .HasMaxLength(30)
-                .IsRequired();
-
             builder.Property(u => u.CreatedAt)
                 .HasColumnType("datetime")
                 .IsRequired();

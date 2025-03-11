@@ -38,6 +38,8 @@ namespace FoodFlowSystem.Interceptors
             var ip = _httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString();
             var userAgent = _httpContextAccessor.HttpContext?.Request?.Headers.UserAgent.ToString();
 
+            var auditLogs = new List<AuditLogEntity>();
+
             foreach (var entry in entries)
             {
                 var entityType = entry.Entity.GetType().Name;
@@ -47,7 +49,7 @@ namespace FoodFlowSystem.Interceptors
                 {
                     Action = entry.State.ToString(),
                     TableName = entityType,
-                    RecordID = primaryKey ?? "New",
+                    RecordID = primaryKey,
                     OldValue = entry.State == EntityState.Added ? null : JsonSerializer.Serialize(entry.OriginalValues.ToObject()),
                     NewValue = entry.State == EntityState.Deleted ? null : JsonSerializer.Serialize(entry.CurrentValues.ToObject()),
                     IPAddress = ip ?? "Unknown",
@@ -56,7 +58,12 @@ namespace FoodFlowSystem.Interceptors
                     CreatedAt = DateTime.UtcNow
                 };
 
-                context.Set<AuditLogEntity>().Add(auditLog);
+                auditLogs.Add(auditLog);
+            }
+
+            if (auditLogs.Any())
+            {
+                context.Set<AuditLogEntity>().AddRange(auditLogs);
             }
         }
     }
