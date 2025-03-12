@@ -77,6 +77,13 @@ namespace FoodFlowSystem.Services.User
 
         public async Task<UserResponse> UpdateUserAsync(UpdateUserRequest request)
         {
+            var validationResult = await _updateUserValidator.ValidateAsync(request);
+            if (!validationResult.IsValid)
+            {
+                _logger.LogError("Invalid Input");
+                throw new ApiException("Invalid Input", 400);
+            }
+
             var userId = this.GetCurrentUserId();
 
             var user = await _userRepository.IsExistUserAsync(userId.ToString());
@@ -84,13 +91,6 @@ namespace FoodFlowSystem.Services.User
             {
                 _logger.LogError("User not found");
                 throw new ApiException("User not found", 404);
-            }
-
-            var validationResult = await _updateUserValidator.ValidateAsync(request);
-            if (!validationResult.IsValid)
-            {
-                _logger.LogError("Invalid Input");
-                throw new ApiException("Invalid Input", 400);
             }
 
             var userDto = await _userRepository.UpdateAsync(user);

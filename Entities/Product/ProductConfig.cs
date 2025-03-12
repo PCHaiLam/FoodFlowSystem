@@ -15,8 +15,14 @@ namespace FoodFlowSystem.Entities.Product
                 .HasMaxLength(100)
                 .IsRequired();
 
+            builder.HasIndex(p => p.Name)
+                .IsUnique();
+
             builder.Property(p => p.Price)
                 .HasColumnType("decimal(10,2)")
+                .IsRequired();
+
+            builder.Property(p => p.Quantity)
                 .IsRequired();
 
             builder.Property(p => p.Status)

@@ -7,10 +7,14 @@ using FoodFlowSystem.Mappers;
 using FoodFlowSystem.Middlewares;
 using FoodFlowSystem.Repositories;
 using FoodFlowSystem.Repositories.Auth;
+using FoodFlowSystem.Repositories.Product;
 using FoodFlowSystem.Repositories.User;
 using FoodFlowSystem.Services.Auth;
+using FoodFlowSystem.Services.Product;
 using FoodFlowSystem.Services.User;
 using FoodFlowSystem.Validators.Auth;
+using FoodFlowSystem.Validators.Product;
+using FoodFlowSystem.Validators.User;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -43,21 +47,30 @@ builder.Services.AddDbContext<MssqlDbContext>((serviceProvider, options) =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("MsSqlString"))
            .AddInterceptors(interceptor, timeInterceptor)
            .EnableSensitiveDataLogging();
-           //.LogTo(Console.WriteLine);
+    //.LogTo(Console.WriteLine);
 });
 
 //Validators
+//Auth
 builder.Services.AddValidatorsFromAssemblyContaining<LoginValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<RegisterValidator>();
+//User
+builder.Services.AddValidatorsFromAssemblyContaining<CreateUserValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<UpdateUserValidator>();
+//product
+builder.Services.AddValidatorsFromAssemblyContaining<CreateProductValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<UpdateProductValidator>();
 
 // Dependency Injection - Repositories
 builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
 // Dependency Injection - Services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IProductService, ProductService>();
 
 // JWT Helper
 builder.Services.AddScoped<JwtHelper>();
@@ -88,10 +101,10 @@ builder.Services.AddAuthentication(options =>
             context.Response.StatusCode = 401;
             context.Response.ContentType = "application/json";
 
-            var result = JsonConvert.SerializeObject(new 
-            { 
+            var result = JsonConvert.SerializeObject(new
+            {
                 statusCode = 401,
-                message = "Unauthorized" 
+                message = "Unauthorized"
             });
 
             return context.Response.WriteAsync(result);
