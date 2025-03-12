@@ -1,6 +1,5 @@
 ﻿using FoodFlowSystem.Middlewares.Exceptions;
 using System.Net;
-using System.Text.Json;
 
 namespace FoodFlowSystem.Middlewares
 {
@@ -32,14 +31,25 @@ namespace FoodFlowSystem.Middlewares
         {
             context.Response.ContentType = "application/json";
 
-            int statusCode = StatusCodes.Status500InternalServerError;
-            string message = "An unexpected error occurred. Please try again later.";
-
-            if (exception is ApiException apiException)
+            int statusCode = exception switch
             {
-                statusCode = apiException.StatusCode;
-                message = apiException.Message;
-            }
+                ApiException ex => ex.StatusCode,
+                UnauthorizedAccessException => StatusCodes.Status401Unauthorized,
+                ArgumentException => StatusCodes.Status400BadRequest,
+                KeyNotFoundException => StatusCodes.Status404NotFound,
+                NotImplementedException => StatusCodes.Status501NotImplemented,
+                _ => StatusCodes.Status500InternalServerError
+            };
+
+            string message = exception switch
+            {
+                ApiException ex => ex.Message,
+                UnauthorizedAccessException => "Unauthorized access.",
+                ArgumentException => $"Invalid argument: {exception.Message}",
+                KeyNotFoundException => "Resource not found.",
+                NotImplementedException => "This feature is not implemented yet.",
+                _ => "An unexpected error occurred. Please try again later."
+            };
 
             context.Response.StatusCode = statusCode;
 
@@ -51,5 +61,6 @@ namespace FoodFlowSystem.Middlewares
 
             await context.Response.WriteAsJsonAsync(response);
         }
+
     }
 }

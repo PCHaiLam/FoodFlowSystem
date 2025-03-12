@@ -5,9 +5,9 @@ using FoodFlowSystem.Entities.User;
 
 namespace FoodFlowSystem.Mappers
 {
-    public class AuthMapper : Profile
+    public class UserMapper : Profile
     {
-        public AuthMapper()
+        public UserMapper()
         {
             //request to entity
             CreateMap<RegisterRequest, UserEntity>();

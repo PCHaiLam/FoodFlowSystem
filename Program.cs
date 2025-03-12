@@ -1,6 +1,5 @@
 using FluentValidation;
 using FoodFlowSystem.Data.DbContexts;
-using FoodFlowSystem.DTOs.Requests.Auth;
 using FoodFlowSystem.Entities;
 using FoodFlowSystem.Helpers;
 using FoodFlowSystem.Interceptors;
@@ -8,77 +7,69 @@ using FoodFlowSystem.Mappers;
 using FoodFlowSystem.Middlewares;
 using FoodFlowSystem.Repositories;
 using FoodFlowSystem.Repositories.Auth;
+using FoodFlowSystem.Repositories.User;
 using FoodFlowSystem.Services.Auth;
+using FoodFlowSystem.Services.User;
 using FoodFlowSystem.Validators.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
-//add log
-//builder.Services.AddDbContext<MssqlDbContext>(options =>
-//    options.UseSqlServer("MsSqlString")
-//           .EnableSensitiveDataLogging()
-//           .LogTo(Console.WriteLine)
-//);
-
+// Base Config
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-//HttpContextAccessor
+// HttpContextAccessor
 builder.Services.AddHttpContextAccessor();
 
-// Add Interceptors
+// JWT Config
+builder.Services.Configure<JwtSettingClass>(builder.Configuration.GetSection("JwtSettings"));
+
+//Interceptors
 builder.Services.AddSingleton<AuditLogInterceptor>();
 builder.Services.AddSingleton<TimeInterceptor>();
 
-// Add DbContext
+//DbContext
 builder.Services.AddDbContext<MssqlDbContext>((serviceProvider, options) =>
 {
     var timeInterceptor = serviceProvider.GetRequiredService<TimeInterceptor>();
     var interceptor = serviceProvider.GetRequiredService<AuditLogInterceptor>();
-    options.UseSqlServer(builder.Configuration.GetConnectionString("MsSqlString"));
+
+    options.UseSqlServer(builder.Configuration.GetConnectionString("MsSqlString"))
+           .AddInterceptors(interceptor, timeInterceptor)
+           .EnableSensitiveDataLogging();
+           //.LogTo(Console.WriteLine);
 });
 
-//Configuration
-builder.Services.Configure<JwtSettingClass>(builder.Configuration.GetSection("JwtSettings"));
-
-//JWT
-builder.Services.AddScoped<JwtHelper>();
-
 //Validators
-//user
 builder.Services.AddValidatorsFromAssemblyContaining<LoginValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<RegisterValidator>();
 
-
-//Dependency Injection
-
-//Repositories
+// Dependency Injection - Repositories
 builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
-
-//Services
+// Dependency Injection - Services
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
-//Authentication
+// JWT Helper
+builder.Services.AddScoped<JwtHelper>();
+
+// Authentication
 builder.Services.AddAuthentication(options =>
 {
-    //jwt
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-
-}).AddJwtBearer(ops =>
+})
+.AddJwtBearer(ops =>
 {
-    //ops.RequireHttpsMetadata = false;
-    //ops.SaveToken = true;
     ops.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
@@ -86,20 +77,37 @@ builder.Services.AddAuthentication(options =>
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
         ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
-        //ValidAudience = builder.Configuration["JwtSettings:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:SecretKey"]))
+    };
+
+    ops.Events = new JwtBearerEvents
+    {
+        OnChallenge = context =>
+        {
+            context.HandleResponse();
+            context.Response.StatusCode = 401;
+            context.Response.ContentType = "application/json";
+
+            var result = JsonConvert.SerializeObject(new 
+            { 
+                statusCode = 401,
+                message = "Unauthorized" 
+            });
+
+            return context.Response.WriteAsync(result);
+        }
     };
 });
 
-//register HttpClient to call other services
+// Register HttpClient
 builder.Services.AddHttpClient();
 
-//mapper
-builder.Services.AddAutoMapper(typeof(AuthMapper));
+// Register AutoMapper
+builder.Services.AddAutoMapper(typeof(UserMapper));
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Middleware Pipeline Configuration
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -111,8 +119,11 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Middlewares
 app.UseMiddleware<ExceptionMiddleware>();
+app.UseMiddleware<ApiResponseMiddleware>();
 
 app.MapControllers();
 
 app.Run();
+
