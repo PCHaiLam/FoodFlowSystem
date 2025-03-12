@@ -5,6 +5,7 @@ using FoodFlowSystem.Entities.User;
 using FoodFlowSystem.Helpers;
 using FoodFlowSystem.Middlewares.Exceptions;
 using FoodFlowSystem.Repositories.Auth;
+using FoodFlowSystem.Repositories.User;
 using Google.Apis.Auth;
 using Microsoft.AspNetCore.Identity;
 using Newtonsoft.Json;
@@ -16,6 +17,7 @@ namespace FoodFlowSystem.Services.Auth
     public class AuthService : IAuthService
     {
         private readonly IAuthRepository _authRepository;
+        private readonly IUserRepository _userRepository;
         private readonly ILogger<AuthService> _logger;
         private readonly IMapper _mapper;
         private readonly IHttpContextAccessor _httpContextAccessor;
@@ -25,6 +27,7 @@ namespace FoodFlowSystem.Services.Auth
 
         public AuthService(
             IAuthRepository authRepository, 
+            IUserRepository userRepository,
             ILogger<AuthService> logger, 
             IMapper mapper, 
             IHttpContextAccessor httpContextAccessor, 
@@ -33,6 +36,7 @@ namespace FoodFlowSystem.Services.Auth
             IValidator<RegisterRequest> registerValidator)
         {
             _authRepository = authRepository;
+            _userRepository = userRepository;
             _logger = logger;
             _mapper = mapper;
             _httpContextAccessor = httpContextAccessor;
@@ -153,14 +157,14 @@ namespace FoodFlowSystem.Services.Auth
                 throw new ApiException("Invalid input", 400);
             }
 
-            var emailExist = await _authRepository.IsExistUserAsync(request.Email);
+            var emailExist = await _userRepository.IsExistUserAsync(request.Email);
             if (emailExist != null)
             {
                 _logger.LogError("Email already exists");
                 throw new ApiException("Email already exists", 400);
             }
 
-            var phoneExist = await _authRepository.IsExistUserAsync(request.Phone);
+            var phoneExist = await _userRepository.IsExistUserAsync(request.Phone);
             if (phoneExist != null)
             {
                 _logger.LogError("Phone already exists");
