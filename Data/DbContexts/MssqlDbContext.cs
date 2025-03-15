@@ -2,6 +2,7 @@
 using FoodFlowSystem.Entities.Category;
 using FoodFlowSystem.Entities.Feedback;
 using FoodFlowSystem.Entities.Invoice;
+using FoodFlowSystem.Entities.OAuth;
 using FoodFlowSystem.Entities.Order;
 using FoodFlowSystem.Entities.OrderItem;
 using FoodFlowSystem.Entities.Payment;
@@ -42,6 +43,7 @@ namespace FoodFlowSystem.Data.DbContexts
         public DbSet<TableEntity> Tables { get; set; }
         public DbSet<FeedbackEntity> Feedbacks { get; set; }
         public DbSet<ReservationEntity> Reservations { get; set; }
+        public DbSet<OAuthEntity> OAuths { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -60,6 +62,7 @@ namespace FoodFlowSystem.Data.DbContexts
             modelBuilder.ApplyConfiguration(new TableConfig());
             modelBuilder.ApplyConfiguration(new FeedbackConfig());
             modelBuilder.ApplyConfiguration(new ReservationConfig());
+            modelBuilder.ApplyConfiguration(new OAuthConfig());
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

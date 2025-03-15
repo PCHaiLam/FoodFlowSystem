@@ -11,7 +11,7 @@
 
         protected int GetCurrentUserId()
         {
-            return int.Parse(_httpContextAccessor.HttpContext.User.Claims.FirstOrDefault(c => c.Type == "userId").Value);
+            return int.Parse(_httpContextAccessor.HttpContext.User.Claims.FirstOrDefault(c => c.Type == "user_id").Value);
         }
     }
 }

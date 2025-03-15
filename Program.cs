@@ -7,6 +7,7 @@ using FoodFlowSystem.Mappers;
 using FoodFlowSystem.Middlewares;
 using FoodFlowSystem.Repositories;
 using FoodFlowSystem.Repositories.Auth;
+using FoodFlowSystem.Repositories.OAuth;
 using FoodFlowSystem.Repositories.Product;
 using FoodFlowSystem.Repositories.User;
 using FoodFlowSystem.Services.Auth;
@@ -24,7 +25,11 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 // Base Config
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
+    }); ;
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -64,6 +69,7 @@ builder.Services.AddValidatorsFromAssemblyContaining<UpdateProductValidator>();
 // Dependency Injection - Repositories
 builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+builder.Services.AddScoped<IOAuthRepository, OAuthRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
@@ -135,6 +141,13 @@ app.UseAuthorization();
 // Middlewares
 app.UseMiddleware<ExceptionMiddleware>();
 app.UseMiddleware<ApiResponseMiddleware>();
+
+app.UseCors(builder => {
+    builder.AllowAnyOrigin()
+           .AllowAnyMethod()
+           .AllowAnyHeader()
+           .WithExposedHeaders("auth_token", "refresh_token", "server", "date");
+});
 
 app.MapControllers();
 

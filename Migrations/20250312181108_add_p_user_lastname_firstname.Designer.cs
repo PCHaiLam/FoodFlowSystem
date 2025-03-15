@@ -4,6 +4,7 @@ using FoodFlowSystem.Data.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FoodFlowSystem.Migrations
 {
     [DbContext(typeof(MssqlDbContext))]
-    partial class MssqlDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250312181108_add_p_user_lastname_firstname")]
+    partial class add_p_user_lastname_firstname
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -174,45 +177,6 @@ namespace FoodFlowSystem.Migrations
                     b.HasIndex("PaymentID");
 
                     b.ToTable("Invoices", (string)null);
-                });
-
-            modelBuilder.Entity("FoodFlowSystem.Entities.OAuth.OAuthEntity", b =>
-                {
-                    b.Property<int>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("LastLoginAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Provider")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ProviderUserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("ID");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("OAuths", (string)null);
                 });
 
             modelBuilder.Entity("FoodFlowSystem.Entities.Order.OrderEntity", b =>
@@ -528,6 +492,7 @@ namespace FoodFlowSystem.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("HashPassword")
+                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
@@ -538,9 +503,6 @@ namespace FoodFlowSystem.Migrations
                     b.Property<string>("Phone")
                         .HasMaxLength(15)
                         .HasColumnType("nvarchar(15)");
-
-                    b.Property<string>("PhotoUrl")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("RoleID")
                         .HasColumnType("int");
@@ -601,17 +563,6 @@ namespace FoodFlowSystem.Migrations
                     b.Navigation("Order");
 
                     b.Navigation("Payment");
-                });
-
-            modelBuilder.Entity("FoodFlowSystem.Entities.OAuth.OAuthEntity", b =>
-                {
-                    b.HasOne("FoodFlowSystem.Entities.User.UserEntity", "User")
-                        .WithMany("OAuths")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("FoodFlowSystem.Entities.Order.OrderEntity", b =>
@@ -766,8 +717,6 @@ namespace FoodFlowSystem.Migrations
                     b.Navigation("AuditLogs");
 
                     b.Navigation("Feedbacks");
-
-                    b.Navigation("OAuths");
 
                     b.Navigation("Orders");
 

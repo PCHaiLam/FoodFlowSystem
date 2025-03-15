@@ -11,26 +11,21 @@ namespace FoodFlowSystem.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
-        private readonly IHttpClientFactory _clientFactory;
         
         public AuthController(
             IAuthService authService,
             IHttpClientFactory httpClientFactory)
         {
             _authService = authService;
-            _clientFactory = httpClientFactory;
         }
 
-        [HttpPost("google")]
+        [HttpPost("google-login")]
         [AllowAnonymous]
-        public async Task<IActionResult> Google([FromBody] GoogleTokenRequest request)
+        public async Task<IActionResult> Google([FromBody] GoogleLoginRequest request)
         {
-            var client = _clientFactory.CreateClient();
-            var response = await client.GetAsync($"https://www.googleapis.com/oauth2/v3/tokeninfo?id_token={request.Token}");
-            var token = await response.Content.ReadAsStringAsync();
-            var user = await client.GetFromJsonAsync<UserEntity>("https://www.googleapis.com/oauth2/v1/userinfo?access_token=" + token);
+            var  response = await _authService.LoginWithGoogleAsync(request);
             
-            return Ok(user);
+            return Ok(response);
         }
 
         [HttpPost("register")]

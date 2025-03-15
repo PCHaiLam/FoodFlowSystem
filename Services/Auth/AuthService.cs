@@ -1,15 +1,15 @@
 ﻿using AutoMapper;
 using FluentValidation;
 using FoodFlowSystem.DTOs.Requests.Auth;
+using FoodFlowSystem.DTOs.Responses;
+using FoodFlowSystem.Entities.OAuth;
 using FoodFlowSystem.Entities.User;
 using FoodFlowSystem.Helpers;
 using FoodFlowSystem.Middlewares.Exceptions;
 using FoodFlowSystem.Repositories.Auth;
+using FoodFlowSystem.Repositories.OAuth;
 using FoodFlowSystem.Repositories.User;
 using Google.Apis.Auth;
-using Microsoft.AspNetCore.Identity;
-using Newtonsoft.Json;
-using System.Net.WebSockets;
 using System.Security.Claims;
 
 namespace FoodFlowSystem.Services.Auth
@@ -18,6 +18,7 @@ namespace FoodFlowSystem.Services.Auth
     {
         private readonly IAuthRepository _authRepository;
         private readonly IUserRepository _userRepository;
+        private readonly IOAuthRepository _oauthRepository;
         private readonly ILogger<AuthService> _logger;
         private readonly IMapper _mapper;
         private readonly IHttpContextAccessor _httpContextAccessor;
@@ -28,6 +29,7 @@ namespace FoodFlowSystem.Services.Auth
         public AuthService(
             IAuthRepository authRepository, 
             IUserRepository userRepository,
+            IOAuthRepository oauthRepository,
             ILogger<AuthService> logger, 
             IMapper mapper, 
             IHttpContextAccessor httpContextAccessor, 
@@ -37,6 +39,7 @@ namespace FoodFlowSystem.Services.Auth
         {
             _authRepository = authRepository;
             _userRepository = userRepository;
+            _oauthRepository = oauthRepository;
             _logger = logger;
             _mapper = mapper;
             _httpContextAccessor = httpContextAccessor;
@@ -45,74 +48,68 @@ namespace FoodFlowSystem.Services.Auth
             _registerValidator = registerValidator;
         }
 
-        //public async Task AuthenticateWithGoogleAsync(string accessToken, string idToken)
-        //{
-        //    // Validate the ID token and retrieve the payload
-        //    var payload = await ValidateGoogleTokenAsync(idToken);
+        public async Task<UserResponse> LoginWithGoogleAsync(GoogleLoginRequest request)
+        {
+            var payload = await GoogleJsonWebSignature.ValidateAsync(request.IdToken);
+            if (payload == null)
+            {
+                _logger.LogError("Invalid google payload");
+                throw new ApiException("Invalid google payload", 400);
+            }
+            
+            var user = await _userRepository.IsExistUserAsync(payload.Email);
+            if (user == null)
+            {
+                var newUser = new UserEntity
+                {
+                    FirstName = payload.GivenName,
+                    LastName = payload.FamilyName,
+                    Email = payload.Email,
+                    PhotoUrl = payload.Picture,
+                    RoleID = 2,
+                };
 
-        //    // Fetch additional user profile information using the access token
-        //    var userProfile = await GetGoogleUserProfileAsync(accessToken);
+                await _authRepository.AddAsync(newUser);
 
-        //    // Check if the user already exists in the database
-        //    var userExists = await _authRepository.IsExistUserAsync(payload.Email);
+                var newOauth = new OAuthEntity
+                {
+                    Provider = "GOOGLE",
+                    ProviderUserId = payload.Subject,
+                    UserId = newUser.ID,
+                    Email = payload.Email,
+                    LastLoginAt = DateTime.UtcNow,
+                };
 
-        //    // If user doesn't exist, create a new user
-        //    if (userExists == null)
-        //    {
-        //        await CreateNewUserAsync(userProfile);
+                await _oauthRepository.AddAsync(newOauth);
+                _logger.LogInformation("Register user with google account success");
+            }
 
-        //    }
+            user = await _userRepository.IsExistUserAsync(payload.Email);
 
-        //    // Prepare the sign-in DTO for login
-        //    var signInDto = new SignInDto(
-        //        Email: userProfile.Email,
-        //        Password: string.Empty,  // No password for external logins
-        //        SignUpMethod: SignUpMethod.External
-        //    );
+            var claims = new[]
+            {
+                new Claim("user_id", user.ID.ToString()),
+                new Claim("first_name", user.FirstName),
+                new Claim("last_name", user.LastName ?? ""),
+                new Claim("phone", user.Phone ?? ""),
+                new Claim("photo_url", user.PhotoUrl ?? ""),
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Role, user.RoleID.ToString()),
+            };
 
-        //    // Use the login service to issue a token
-        //    var token = await connectService.LoginAsync(signInDto);
+            var token = _jwtHelper.GenerateToken(claims);
+            var refreshToken = _jwtHelper.CreateRefreshToken();
 
-        //    return token;
-        //}
-        //private async Task<GoogleUserProfile> GetGoogleUserProfileAsync(string accessToken)
-        //{
-        //    using var httpClient = new HttpClient();
+            var responseHeaders = _httpContextAccessor.HttpContext.Response.Headers;
+            responseHeaders.Append("auth_token", $"Bearer {token}");
+            responseHeaders.Append("refresh_token", refreshToken);
 
-        //    // Send GET request to Google UserInfo API
-        //    var response = await httpClient.GetAsync($"{_googleUserInfoUrl}?access_token={accessToken}");
-        //    response.EnsureSuccessStatusCode();
+            _logger.LogInformation("Login with google success");
 
-        //    // Parse the JSON response
-        //    var content = await response.Content.ReadAsStringAsync();
-        //    var userProfile = JsonConvert.DeserializeObject<GoogleUserProfile>(content);
-
-        //    return userProfile!;
-        //}
-
-        //private static async Task<GoogleJsonWebSignature.Payload> ValidateGoogleTokenAsync(string idToken)
-        //{
-        //    var payload = await GoogleJsonWebSignature.ValidateAsync(idToken);
-
-        //    if (payload == null || string.IsNullOrEmpty(payload.Email))
-        //        throw new UnauthorizedAccessException("Invalid Google Token");
-
-        //    return payload;
-        //}
-
-        //private async Task CreateNewUserAsync(GoogleUserProfile userProfile)
-        //{
-        //    var newUser = new UserEntity
-        //    {
-        //        FullName = userProfile.Name,
-        //        Email = userProfile.Email,
-        //    };
-
-        //    // Add the new user to the repository and save
-        //    await identityUserRepository.AddAsync(newUser);
-        //    await identityUserRepository.SaveChangesAsync();
-        //}
-
+            var response = _mapper.Map<UserResponse>(user);
+            return response;
+        }   
+        
         public async Task LoginAsync(LoginRequest request)
         {
             var validationResult = await _loginValidator.ValidateAsync(request);
@@ -131,10 +128,11 @@ namespace FoodFlowSystem.Services.Auth
 
             var claims = new[]
             {
-                new Claim("userId", user.ID.ToString()),
-                new Claim("name", user.FullName),
+                new Claim("user_id", user.ID.ToString()),
+                new Claim("first_name", user.FirstName),
+                new Claim("last_name", user.LastName),
                 new Claim(ClaimTypes.Email, user.Email),
-                new Claim("phone", user.Phone),
+                new Claim("phone_number", user.Phone),
                 new Claim(ClaimTypes.Role, user.RoleID.ToString()),
             };
 

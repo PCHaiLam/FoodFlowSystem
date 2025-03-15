@@ -7,7 +7,8 @@ namespace FoodFlowSystem.Validators.User
     {
         public UpdateUserValidator()
         {
-            RuleFor(x => x.FullName);
+            RuleFor(x => x.LastName);
+            RuleFor(x => x.FirstName).NotEmpty();
             RuleFor(x => x.Email).EmailAddress();
             RuleFor(x => x.Phone);
         }

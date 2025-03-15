@@ -12,7 +12,7 @@ namespace FoodFlowSystem.Repositories.User
         }
         public async Task<IEnumerable<UserEntity>> GetByNameAsync(string name)
         {
-            return await _dbContext.Users.Where(x => x.FullName.Contains(name)).ToListAsync();
+            return await _dbContext.Users.Where(x => x.LastName.Contains(name)).ToListAsync();
         }
 
         public Task<UserEntity> IsExistUserAsync(string input)
