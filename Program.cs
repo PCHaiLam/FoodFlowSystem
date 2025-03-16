@@ -1,8 +1,13 @@
+using FluentValidation;
 using FoodFlowSystem.Data.DbContexts;
 using FoodFlowSystem.Entities;
 using FoodFlowSystem.Interceptors;
+using FoodFlowSystem.Mappers;
 using FoodFlowSystem.Middlewares;
 using FoodFlowSystem.Repositories;
+using FoodFlowSystem.Repositories.User;
+using FoodFlowSystem.Services.User;
+using FoodFlowSystem.Validators.User;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -39,12 +44,17 @@ builder.Services.AddDbContext<MssqlDbContext>((serviceProvider, options) =>
 });
 
 //Validators
+//User
+builder.Services.AddValidatorsFromAssemblyContaining<CreateUserValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<UpdateUserValidator>();
 
 
 // Dependency Injection - Repositories
 builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 // Dependency Injection - Services
+builder.Services.AddScoped<IUserService, UserService>();
 
 // JWT 
 
@@ -54,6 +64,7 @@ builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
 builder.Services.AddHttpClient();
 
 // Register AutoMapper
+builder.Services.AddAutoMapper(typeof(UserMapper));
 
 var app = builder.Build();
 
