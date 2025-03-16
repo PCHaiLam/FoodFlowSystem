@@ -24,19 +24,14 @@
 
   <ItemGroup>
     <Folder Include="Repositories\Feedback\" />
-    <Folder Include="Repositories\OrderItem\" />
-    <Folder Include="Repositories\Order\" />
     <Folder Include="Repositories\Payment\" />
     <Folder Include="Repositories\Reservation\" />
     <Folder Include="Services\Feedback\" />
-    <Folder Include="Services\Order\" />
     <Folder Include="Services\Payment\" />
     <Folder Include="Services\Report\" />
     <Folder Include="Services\Reservation\" />
     <Folder Include="Validators\AuditLog\" />
     <Folder Include="Validators\Feedback\" />
-    <Folder Include="Validators\OrderItem\" />
-    <Folder Include="Validators\Order\" />
     <Folder Include="Validators\Payment\" />
     <Folder Include="Validators\Report\" />
     <Folder Include="Validators\Reservation\" />

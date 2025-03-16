@@ -8,12 +8,17 @@ using FoodFlowSystem.Middlewares;
 using FoodFlowSystem.Repositories;
 using FoodFlowSystem.Repositories.Auth;
 using FoodFlowSystem.Repositories.OAuth;
+using FoodFlowSystem.Repositories.Order;
+using FoodFlowSystem.Repositories.OrderItem;
 using FoodFlowSystem.Repositories.Product;
 using FoodFlowSystem.Repositories.User;
 using FoodFlowSystem.Services.Auth;
+using FoodFlowSystem.Services.Order;
 using FoodFlowSystem.Services.Product;
 using FoodFlowSystem.Services.User;
 using FoodFlowSystem.Validators.Auth;
+using FoodFlowSystem.Validators.Order;
+using FoodFlowSystem.Validators.OrderItem;
 using FoodFlowSystem.Validators.Product;
 using FoodFlowSystem.Validators.User;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -65,6 +70,11 @@ builder.Services.AddValidatorsFromAssemblyContaining<UpdateUserValidator>();
 //Product
 builder.Services.AddValidatorsFromAssemblyContaining<CreateProductValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<UpdateProductValidator>();
+//Order
+builder.Services.AddValidatorsFromAssemblyContaining<CreateOrderValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<UpdateOrderValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<CreateOrderItemValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<UpdateOrderItemValidator>();
 
 
 // Dependency Injection - Repositories
@@ -73,11 +83,14 @@ builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IOAuthRepository, OAuthRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IOrderItemRepository, OrderItemRepository>();
 
 // Dependency Injection - Services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
 
 // JWT 
 builder.Services.AddScoped<JwtHelper>();
@@ -125,6 +138,8 @@ builder.Services.AddHttpClient();
 // Register AutoMapper
 builder.Services.AddAutoMapper(typeof(UserMapper));
 builder.Services.AddAutoMapper(typeof(ProductMapper));
+builder.Services.AddAutoMapper(typeof(OrderMapper));
+builder.Services.AddAutoMapper(typeof(OrderItemMapper));
 
 var app = builder.Build();
 
