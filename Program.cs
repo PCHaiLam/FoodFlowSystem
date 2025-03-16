@@ -8,10 +8,13 @@ using FoodFlowSystem.Middlewares;
 using FoodFlowSystem.Repositories;
 using FoodFlowSystem.Repositories.Auth;
 using FoodFlowSystem.Repositories.OAuth;
+using FoodFlowSystem.Repositories.Product;
 using FoodFlowSystem.Repositories.User;
 using FoodFlowSystem.Services.Auth;
+using FoodFlowSystem.Services.Product;
 using FoodFlowSystem.Services.User;
 using FoodFlowSystem.Validators.Auth;
+using FoodFlowSystem.Validators.Product;
 using FoodFlowSystem.Validators.User;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -59,6 +62,9 @@ builder.Services.AddValidatorsFromAssemblyContaining<RegisterValidator>();
 //User
 builder.Services.AddValidatorsFromAssemblyContaining<CreateUserValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<UpdateUserValidator>();
+//Product
+builder.Services.AddValidatorsFromAssemblyContaining<CreateProductValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<UpdateProductValidator>();
 
 
 // Dependency Injection - Repositories
@@ -66,10 +72,12 @@ builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IOAuthRepository, OAuthRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
 // Dependency Injection - Services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IProductService, ProductService>();
 
 // JWT 
 builder.Services.AddScoped<JwtHelper>();
@@ -116,6 +124,7 @@ builder.Services.AddHttpClient();
 
 // Register AutoMapper
 builder.Services.AddAutoMapper(typeof(UserMapper));
+builder.Services.AddAutoMapper(typeof(ProductMapper));
 
 var app = builder.Build();
 
