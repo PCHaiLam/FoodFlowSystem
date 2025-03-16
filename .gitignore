@@ -1,0 +1,15 @@
+# .NET Core
+bin/
+obj/
+*.csproj.user
+*.suo
+*.user
+*.sln.docstates
+Properties/launchSettings.json
+
+# Appsettings Development
+appsettings.Development.json
+appsettings.json
+
+# VS-specific
+.vs/
