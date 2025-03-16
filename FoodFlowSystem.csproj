@@ -23,11 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
-    <Folder Include="DTOs\Requests\" />
     <Folder Include="Helpers\" />
-    <Folder Include="Mappers\" />
-    <Folder Include="Migrations\" />
     <Folder Include="Repositories\Auth\" />
     <Folder Include="Repositories\Feedback\" />
     <Folder Include="Repositories\OAuth\" />
@@ -36,7 +32,6 @@
     <Folder Include="Repositories\Payment\" />
     <Folder Include="Repositories\Product\" />
     <Folder Include="Repositories\Reservation\" />
-    <Folder Include="Repositories\User\" />
     <Folder Include="Services\Auth\" />
     <Folder Include="Services\Feedback\" />
     <Folder Include="Services\Order\" />
@@ -44,7 +39,6 @@
     <Folder Include="Services\Product\" />
     <Folder Include="Services\Report\" />
     <Folder Include="Services\Reservation\" />
-    <Folder Include="Services\User\" />
     <Folder Include="Validators\AuditLog\" />
     <Folder Include="Validators\Auth\" />
     <Folder Include="Validators\Feedback\" />
@@ -54,7 +48,6 @@
     <Folder Include="Validators\Product\" />
     <Folder Include="Validators\Report\" />
     <Folder Include="Validators\Reservation\" />
-    <Folder Include="Validators\User\" />
   </ItemGroup>
 
 </Project>
