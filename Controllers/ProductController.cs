@@ -23,6 +23,13 @@ namespace FoodFlowSystem.Controllers
             return Ok(result);
         }
 
+        [HttpGet("active")]
+        public async Task<IActionResult> GetAllActiveAsync()
+        {
+            var result = await _productService.GetAllActiveAsync();
+            return Ok(result);
+        }
+
         [HttpPost]
         [Authorize(Roles = "1,3")]
         public async Task<IActionResult> AddAsync([FromBody] CreateProductRequest request)

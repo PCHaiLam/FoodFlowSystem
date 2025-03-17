@@ -11,5 +11,6 @@ namespace FoodFlowSystem.Services.Product
         Task DeleteAsync(int id);
         Task<IEnumerable<ProductResponse>> GetByNameAsync(string name);
         Task<IEnumerable<ProductResponse>> GetByPriceAsync(decimal price);
+        Task<IEnumerable<ProductResponse>> GetAllActiveAsync();
     }
 }

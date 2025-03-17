@@ -3,14 +3,17 @@ using FluentValidation;
 using FoodFlowSystem.DTOs.Requests.Product;
 using FoodFlowSystem.DTOs.Responses;
 using FoodFlowSystem.Entities.Product;
+using FoodFlowSystem.Entities.ProductVersions;
 using FoodFlowSystem.Middlewares.Exceptions;
 using FoodFlowSystem.Repositories.Product;
+using FoodFlowSystem.Repositories.ProductVersion;
 
 namespace FoodFlowSystem.Services.Product
 {
     public class ProductService : IProductService
     {
         private readonly IProductRepository _productRepository;
+        private readonly IProductVersionRepository _productVersionRepository;
         private readonly IMapper _mapper;
         private readonly ILogger<ProductService> _logger;
         private readonly IValidator<UpdateProductRequest> _updateProductValidator;
@@ -48,11 +51,24 @@ namespace FoodFlowSystem.Services.Product
             }
 
             var product = _mapper.Map<ProductEntity>(request);
-            var result = await _productRepository.AddAsync(product);
+            var newProduct = await _productRepository.AddAsync(product);
+
+            var productVersion = new ProductVersionEntity
+            {
+                ProductID = newProduct.ID,
+                Price = request.Price,
+                EffectiveDate = DateTime.UtcNow,
+                IsActive = true,
+            };
+
+            var newProductVersion = await _productVersionRepository.AddAsync(productVersion);
 
             _logger.LogInformation("Product added successfully");
 
-            return _mapper.Map<ProductResponse>(result);
+            var result = _mapper.Map<ProductResponse>(newProduct);
+            result.Price = newProductVersion.Price;
+
+            return result;
         }
 
         public async Task DeleteAsync(int id)
@@ -64,7 +80,10 @@ namespace FoodFlowSystem.Services.Product
                 throw new ApiException("Product not found", 404);
             }
 
-            await _productRepository.DeleteAsync(id);
+            var productVersion = await _productVersionRepository.GetLastProductVersionByProductIdAsync(id);
+            productVersion.IsActive = false;
+
+            await _productVersionRepository.UpdateAsync(productVersion);
 
             _logger.LogInformation("Product deleted successfully");
         }
@@ -72,7 +91,13 @@ namespace FoodFlowSystem.Services.Product
         public async Task<IEnumerable<ProductResponse>> GetAllAsync()
         {
             var list = await _productRepository.GetAllAsync();
-            var result = _mapper.Map<IEnumerable<ProductResponse>>(list);   
+            var result = _mapper.Map<IEnumerable<ProductResponse>>(list);
+
+            foreach (var product in result)
+            {
+                var lastProductVersion = await _productVersionRepository.GetLastProductVersionByProductIdAsync(product.ID);
+                product.Price = lastProductVersion.Price;
+            }
 
             _logger.LogInformation("Get all products successfully");
 
@@ -80,10 +105,32 @@ namespace FoodFlowSystem.Services.Product
 
         }
 
+        public async Task<IEnumerable<ProductResponse>> GetAllActiveAsync()
+        {
+            var list = await _productRepository.GetAllActiceAsync();
+            var result = _mapper.Map<IEnumerable<ProductResponse>>(list);
+
+            foreach (var product in result)
+            {
+                var lastProductVersion = await _productVersionRepository.GetLastProductVersionByProductIdAsync(product.ID);
+                product.Price = lastProductVersion.Price;
+            }
+
+            _logger.LogInformation("Get all active products successfully");
+
+            return result;
+        }
+
         public async Task<IEnumerable<ProductResponse>> GetByNameAsync(string name)
         {
             var list = await _productRepository.GetByNameAsync(name);
             var result = _mapper.Map<IEnumerable<ProductResponse>>(list);
+
+            foreach (var product in result)
+            {
+                var lastProductVersion = await _productVersionRepository.GetLastProductVersionByProductIdAsync(product.ID);
+                product.Price = lastProductVersion.Price;
+            }
 
             _logger.LogInformation($"Get product by name successfully: {name}");
 
@@ -94,6 +141,12 @@ namespace FoodFlowSystem.Services.Product
         {
             var list = await _productRepository.GetByPriceAsync(price);
             var result = _mapper.Map<IEnumerable<ProductResponse>>(list);
+
+            foreach (var product in result)
+            {
+                var lastProductVersion = await _productVersionRepository.GetLastProductVersionByProductIdAsync(product.ID);
+                product.Price = lastProductVersion.Price;
+            }
 
             _logger.LogInformation($"Get product by price successfully: {price}");
 
@@ -116,12 +169,32 @@ namespace FoodFlowSystem.Services.Product
                 throw new ApiException("Product not found", 404);
             }
 
+            var lastProductVersion = await _productVersionRepository.GetLastProductVersionByProductIdAsync(request.ID);
+
+            if (lastProductVersion.Price != request.Price && request.Price > 0)
+            {
+                lastProductVersion.IsActive = false;
+                await _productVersionRepository.UpdateAsync(lastProductVersion);
+
+                var newProductVersion = new ProductVersionEntity
+                {
+                    ProductID = request.ID,
+                    Price = request.Price,
+                    EffectiveDate = DateTime.UtcNow,
+                    IsActive = true,
+                };
+                await _productVersionRepository.AddAsync(newProductVersion);
+            }
+
             var productDto = _mapper.Map<ProductEntity>(request);
-            var result = await _productRepository.UpdateAsync(productDto);
+            var productUpdated = await _productRepository.UpdateAsync(productDto);
 
             _logger.LogInformation("Product updated successfully");
 
-            return _mapper.Map<ProductResponse>(result);
+            var result = _mapper.Map<ProductResponse>(productUpdated);
+            result.Price = request.Price;
+
+            return result;
         }
     }
 }
