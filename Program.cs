@@ -13,17 +13,20 @@ using FoodFlowSystem.Repositories.Order;
 using FoodFlowSystem.Repositories.OrderItem;
 using FoodFlowSystem.Repositories.Product;
 using FoodFlowSystem.Repositories.ProductVersion;
+using FoodFlowSystem.Repositories.Table;
 using FoodFlowSystem.Repositories.User;
 using FoodFlowSystem.Services.Auth;
 using FoodFlowSystem.Services.Category;
 using FoodFlowSystem.Services.Order;
 using FoodFlowSystem.Services.Product;
+using FoodFlowSystem.Services.Table;
 using FoodFlowSystem.Services.User;
 using FoodFlowSystem.Validators.Auth;
 using FoodFlowSystem.Validators.Category;
 using FoodFlowSystem.Validators.Order;
 using FoodFlowSystem.Validators.OrderItem;
 using FoodFlowSystem.Validators.Product;
+using FoodFlowSystem.Validators.Table;
 using FoodFlowSystem.Validators.User;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -82,6 +85,9 @@ builder.Services.AddValidatorsFromAssemblyContaining<CreateOrderValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<UpdateOrderValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<CreateOrderItemValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<UpdateOrderItemValidator>();
+//Table
+builder.Services.AddValidatorsFromAssemblyContaining<CreateTableValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<UpdateTableValidator>();
 
 
 // Dependency Injection - Repositories
@@ -94,6 +100,7 @@ builder.Services.AddScoped<IProductVersionRepository, ProductVersionRepository>(
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IOrderItemRepository, OrderItemRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<ITableRepository, TableRepository>();
 
 // Dependency Injection - Services
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -101,6 +108,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<ITableService, TableService>();
 
 // JWT 
 builder.Services.AddScoped<JwtHelper>();
@@ -151,6 +159,7 @@ builder.Services.AddAutoMapper(typeof(ProductMapper));
 builder.Services.AddAutoMapper(typeof(OrderMapper));
 builder.Services.AddAutoMapper(typeof(OrderItemMapper));
 builder.Services.AddAutoMapper(typeof(CategoryMapper));
+builder.Services.AddAutoMapper(typeof(TableMapper));
 
 var app = builder.Build();
 
