@@ -52,7 +52,12 @@ namespace FoodFlowSystem.Services.Order
             if (!validationResult.IsValid)
             {
                 _logger.LogError("Validation create order request failed");
-                throw new ApiException("Invalid create order input.");
+                var errors = validationResult.Errors.Select(e => new
+                {
+                    Field = e.PropertyName,
+                    Message = e.ErrorMessage
+                });
+                throw new ApiException("Invalid create order input.", 400, errors);
             }
 
             var order = _mapper.Map<OrderEntity>(request);
@@ -205,7 +210,12 @@ namespace FoodFlowSystem.Services.Order
             if (!validationResult.IsValid)
             {
                 _logger.LogError("Validation update order request failed");
-                throw new ApiException("Invalid update order input.");
+                var errors = validationResult.Errors.Select(e => new
+                {
+                    Field = e.PropertyName,
+                    Message = e.ErrorMessage
+                });
+                throw new ApiException("Invalid update order input.", 400, errors);
             }
 
             var order = await _orderRepository.GetByIdAsync(request.OrderID);

@@ -38,7 +38,12 @@ namespace FoodFlowSystem.Services.Category
             if (!validationResult.IsValid)
             {
                 _logger.LogError("Validation error");
-                throw new ApiException("Invalid input.", 400);
+                var errors = validationResult.Errors.Select(e => new
+                {
+                    Field = e.PropertyName,
+                    Message = e.ErrorMessage
+                });
+                throw new ApiException("Invalid input.", 400, errors);
             }
 
             var category = _mapper.Map<CategoryEntity>(request);
@@ -101,7 +106,12 @@ namespace FoodFlowSystem.Services.Category
             if (!validationResult.IsValid)
             {
                 _logger.LogError("Validation error");
-                throw new ApiException("Invalid input.", 400);
+                var errors = validationResult.Errors.Select(e => new
+                {
+                    Field = e.PropertyName,
+                    Message = e.ErrorMessage
+                });
+                throw new ApiException("Invalid input.", 400, errors);
             }
 
             var category = await _categoryRepository.GetByIdAsync(request.Id);

@@ -1,20 +1,19 @@
 ﻿using FoodFlowSystem.Middlewares.Exceptions;
 using System.Net;
+using System.Text.Json;
 
 namespace FoodFlowSystem.Middlewares
 {
     public class ExceptionMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly ILogger<ExceptionMiddleware> _logger;
 
-        public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
+        public ExceptionMiddleware(RequestDelegate next)
         {
             _next = next;
-            _logger = logger;
         }
 
-        public async Task Invoke(HttpContext context)
+        public async Task Invoke(HttpContext context, ILogger<ExceptionMiddleware> logger)
         {
             try
             {
@@ -22,12 +21,11 @@ namespace FoodFlowSystem.Middlewares
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, ex.Message);
-                await HandleExceptionAsync(context, ex);
+                await HandleExceptionAsync(context, ex, logger);
             }
         }
 
-        private static async Task HandleExceptionAsync(HttpContext context, Exception exception)
+        private static async Task HandleExceptionAsync(HttpContext context, Exception exception, ILogger<ExceptionMiddleware> logger)
         {
             context.Response.ContentType = "application/json";
 
@@ -52,14 +50,21 @@ namespace FoodFlowSystem.Middlewares
             };
 
             context.Response.StatusCode = statusCode;
+            object errors = (exception is ApiException apiEx && apiEx.Errors != null) ? apiEx.Errors : null;
 
             var response = new
             {
                 statusCode,
-                message
+                message,
+                errors,
             };
 
-            await context.Response.WriteAsJsonAsync(response);
+            logger.LogError(JsonSerializer.Serialize(errors));
+
+            var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+            var jsonResponse = JsonSerializer.Serialize(response, options);
+
+            await context.Response.WriteAsync(jsonResponse);
         }
 
     }

@@ -116,14 +116,24 @@ namespace FoodFlowSystem.Services.Auth
             if (!validationResult.IsValid)
             {
                 _logger.LogError("Validation error: {0}", validationResult.Errors);
-                throw new ApiException("Invalid email or password.", 400);
+                var errors = validationResult.Errors.Select(e => new
+                {
+                    Field = e.PropertyName,
+                    Message = e.ErrorMessage
+                });
+                throw new ApiException("Invalid email or password.", 400, errors);
             }
 
             var user = await _authRepository.CheckUser(request.Email, request.Password);
             if (user == null)
             {
                 _logger.LogError("Email or password wrong!");
-                throw new ApiException("Email or password wrong!", 400);
+                var errors = validationResult.Errors.Select(e => new
+                {
+                    Field = e.PropertyName,
+                    Message = e.ErrorMessage
+                });
+                throw new ApiException("Email or password wrong!", 400, errors);
             }
 
             var claims = new[]
@@ -152,7 +162,12 @@ namespace FoodFlowSystem.Services.Auth
             if (!validationResult.IsValid)
             {
                 _logger.LogError("Validation error: {0}", validationResult.Errors);
-                throw new ApiException("Invalid input", 400);
+                var errors = validationResult.Errors.Select(e => new
+                {
+                    Field = e.PropertyName,
+                    Message = e.ErrorMessage
+                });
+                throw new ApiException("Invalid input", 400, errors);
             }
 
             var emailExist = await _userRepository.IsExistUserEmailAsync(request.Email);

@@ -81,7 +81,12 @@ namespace FoodFlowSystem.Services.User
             if (!validationResult.IsValid)
             {
                 _logger.LogError("Invalid Input");
-                throw new ApiException("Invalid Input", 400);
+                var errors = validationResult.Errors.Select(e => new
+                {
+                    Field = e.PropertyName,
+                    Message = e.ErrorMessage
+                });
+                throw new ApiException("Invalid Input", 400, errors);
             }
 
             var userId = this.GetCurrentUserId();
