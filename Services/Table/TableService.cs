@@ -37,7 +37,13 @@ namespace FoodFlowSystem.Services.Table
             var validationResult = await _createTableRequestValidator.ValidateAsync(request);
             if (!validationResult.IsValid)
             {
-                throw new ValidationException(validationResult.Errors);
+                _logger.LogError("Validation failed");
+                var errors = validationResult.Errors.Select(e => new
+                {
+                    Field = e.PropertyName,
+                    Message = e.ErrorMessage
+                });
+                throw new ApiException("Invalid input", 400, errors);
             }
 
             var tableEntity = _mapper.Map<TableEntity>(request);
@@ -78,7 +84,13 @@ namespace FoodFlowSystem.Services.Table
             var validationResult = await _updateTableRequestValidator.ValidateAsync(request);
             if (!validationResult.IsValid)
             {
-                throw new ValidationException(validationResult.Errors);
+                _logger.LogError("Validation failed");
+                var errors = validationResult.Errors.Select(e => new
+                {
+                    Field = e.PropertyName,
+                    Message = e.ErrorMessage
+                });
+                throw new ApiException("Invalid input", 400, errors);
             }
 
             var tableEntity = _mapper.Map<TableEntity>(request);

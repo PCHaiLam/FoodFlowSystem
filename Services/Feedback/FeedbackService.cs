@@ -36,7 +36,12 @@ namespace FoodFlowSystem.Services.Feedback
             if (!validationResult.IsValid)
             {
                 _logger.LogError("Validation failed");
-                throw new ApiException("Invalid request", 400);
+                var errors = validationResult.Errors.Select(e => new
+                {
+                    Field = e.PropertyName,
+                    Message = e.ErrorMessage
+                });
+                throw new ApiException("Invalid request", 400, errors);
             }
 
             var currentUserId = this.GetCurrentUserId();
@@ -122,7 +127,12 @@ namespace FoodFlowSystem.Services.Feedback
             if (!validationResult.IsValid)
             {
                 _logger.LogError("Invalid Input");
-                throw new ApiException("Invalid Input", 400);
+                var errors = validationResult.Errors.Select(e => new
+                {
+                    Field = e.PropertyName,
+                    Message = e.ErrorMessage
+                });
+                throw new ApiException("Invalid Input", 400, errors);
             }
 
             var feedback = await _feedbackRepository.GetByIdAsync(request.Id);
