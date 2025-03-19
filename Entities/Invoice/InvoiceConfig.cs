@@ -19,12 +19,6 @@ namespace FoodFlowSystem.Entities.Invoice
                 .HasColumnType("decimal(10,2)")
                 .IsRequired();
 
-            builder.Property(i => i.GeneratedBy)
-                .IsRequired();
-
-            builder.Property(i => i.PaymentID)
-                .IsRequired();
-
             builder.Property(i => i.OrderID)
                 .IsRequired();
 
@@ -32,15 +26,10 @@ namespace FoodFlowSystem.Entities.Invoice
                 .HasColumnType("datetime")
                 .IsRequired();
 
-            builder.HasOne(c => c.Payment)
-                .WithMany(i => i.Invoices)
-                .HasForeignKey(i => i.PaymentID)
-                .OnDelete(DeleteBehavior.Restrict);
-
             builder.HasOne(o => o.Order)
                 .WithMany(i => i.Invoices)
                 .HasForeignKey(i => i.OrderID)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

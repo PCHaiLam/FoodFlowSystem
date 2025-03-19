@@ -15,6 +15,10 @@ namespace FoodFlowSystem.Entities.Payment
                 .HasColumnType("decimal(10,2)")
                 .IsRequired();
 
+            builder.Property(p => p.PaymentType)
+                .HasMaxLength(30)
+                .IsRequired();
+
             builder.Property(p => p.PaymentMethod)
                 .HasMaxLength(30)
                 .IsRequired();
@@ -23,13 +27,23 @@ namespace FoodFlowSystem.Entities.Payment
                 .HasColumnType("datetime")
                 .IsRequired();
 
-            builder.Property(p => p.OrderID)
+            builder.Property(p => p.Status)
+                .HasMaxLength(30)
+                .HasDefaultValue("Pending")
                 .IsRequired();
 
-            builder.HasOne(o => o.Order)
+            builder.Property(p => p.IsDeposit)
+                .HasDefaultValue(false)
+                .IsRequired();
+
+            builder.Property(p => p.InvoiceId)
+                .IsRequired();
+
+            builder.HasOne(i => i.Invoice)
                 .WithMany(p => p.Payments)
-                .HasForeignKey(p => p.OrderID)
+                .HasForeignKey(p => p.InvoiceId)
                 .OnDelete(DeleteBehavior.Cascade);
+
         }
     }
 }
