@@ -20,6 +20,7 @@ namespace FoodFlowSystem.Entities.Table
 
             builder.Property(t => t.Status)
                 .HasMaxLength(30)
+                .HasDefaultValue("Available")
                 .IsRequired();
 
             builder.Property(t => t.CreatedAt)
