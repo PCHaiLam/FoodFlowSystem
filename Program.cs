@@ -12,6 +12,7 @@ using FoodFlowSystem.Repositories.Feedback;
 using FoodFlowSystem.Repositories.OAuth;
 using FoodFlowSystem.Repositories.Order;
 using FoodFlowSystem.Repositories.OrderItem;
+using FoodFlowSystem.Repositories.Payment;
 using FoodFlowSystem.Repositories.Product;
 using FoodFlowSystem.Repositories.ProductVersion;
 using FoodFlowSystem.Repositories.Table;
@@ -20,6 +21,7 @@ using FoodFlowSystem.Services.Auth;
 using FoodFlowSystem.Services.Category;
 using FoodFlowSystem.Services.Feedback;
 using FoodFlowSystem.Services.Order;
+using FoodFlowSystem.Services.Payment;
 using FoodFlowSystem.Services.Product;
 using FoodFlowSystem.Services.Table;
 using FoodFlowSystem.Services.User;
@@ -28,6 +30,7 @@ using FoodFlowSystem.Validators.Category;
 using FoodFlowSystem.Validators.Feedback;
 using FoodFlowSystem.Validators.Order;
 using FoodFlowSystem.Validators.OrderItem;
+using FoodFlowSystem.Validators.Payment;
 using FoodFlowSystem.Validators.Product;
 using FoodFlowSystem.Validators.Table;
 using FoodFlowSystem.Validators.User;
@@ -94,6 +97,8 @@ builder.Services.AddValidatorsFromAssemblyContaining<UpdateTableValidator>();
 //Feedback
 builder.Services.AddValidatorsFromAssemblyContaining<UpdateFeedbackValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<UpdateFeedbackValidator>();
+//Payment
+builder.Services.AddValidatorsFromAssemblyContaining<CreatePaymentValidator>();
 
 
 // Dependency Injection - Repositories
@@ -108,6 +113,7 @@ builder.Services.AddScoped<IOrderItemRepository, OrderItemRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<ITableRepository, TableRepository>();
 builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 
 // Dependency Injection - Services
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -117,6 +123,7 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ITableService, TableService>();
 builder.Services.AddScoped<IFeedbackService, FeedbackService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
 
 // JWT 
 builder.Services.AddScoped<JwtHelper>();
@@ -169,6 +176,7 @@ builder.Services.AddAutoMapper(typeof(OrderItemMapper));
 builder.Services.AddAutoMapper(typeof(CategoryMapper));
 builder.Services.AddAutoMapper(typeof(TableMapper));
 builder.Services.AddAutoMapper(typeof(FeedbackMapper));
+builder.Services.AddAutoMapper(typeof(PaymentMapper));
 
 var app = builder.Build();
 

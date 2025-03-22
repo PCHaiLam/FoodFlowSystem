@@ -24,6 +24,14 @@ namespace FoodFlowSystem.Entities.Order
             builder.Property(x => x.HasFoodOrder)
                 .IsRequired(false);
 
+            builder.Property(x => x.ReservationDate)
+                .HasColumnType("date")
+                .IsRequired(false);
+
+            builder.Property(x => x.ReservationTime)
+                .HasColumnType("time")
+                .IsRequired(false);
+
             builder.Property(x => x.TotalAmount)
                 .HasColumnType("decimal(10,2)")
                 .HasDefaultValue(0)

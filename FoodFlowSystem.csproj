@@ -24,7 +24,6 @@
 
   <ItemGroup>
     <Folder Include="Repositories\Reservation\" />
-    <Folder Include="Services\Payment\" />
     <Folder Include="Services\Report\" />
     <Folder Include="Services\Reservation\" />
     <Folder Include="Validators\AuditLog\" />
