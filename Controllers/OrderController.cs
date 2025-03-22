@@ -30,8 +30,8 @@ namespace FoodFlowSystem.Controllers
             return Ok(order);
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetOrder([FromBody] int id)
+        [HttpGet("order-id")]
+        public async Task<IActionResult> GetOrder([FromQuery] int id)
         {
             var order = await _orderService.GetOrderById(id);
             return Ok(order);
