@@ -7,9 +7,7 @@ namespace FoodFlowSystem.Validators.Order
     {
         public CreateOrderValidator()
         {
-            RuleFor(x => x.TableID).NotEmpty();
-            RuleFor(x => x.ReservationID).NotEmpty();
-            RuleFor(x => x.OrderItems).NotEmpty();
+            RuleFor(x => x.Notes).MaximumLength(500);
         }
     }
 }
