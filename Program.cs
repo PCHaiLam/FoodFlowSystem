@@ -9,6 +9,7 @@ using FoodFlowSystem.Repositories;
 using FoodFlowSystem.Repositories.Auth;
 using FoodFlowSystem.Repositories.Category;
 using FoodFlowSystem.Repositories.Feedback;
+using FoodFlowSystem.Repositories.Invoice;
 using FoodFlowSystem.Repositories.OAuth;
 using FoodFlowSystem.Repositories.Order;
 using FoodFlowSystem.Repositories.OrderItem;
@@ -20,6 +21,7 @@ using FoodFlowSystem.Repositories.User;
 using FoodFlowSystem.Services.Auth;
 using FoodFlowSystem.Services.Category;
 using FoodFlowSystem.Services.Feedback;
+using FoodFlowSystem.Services.Invoice;
 using FoodFlowSystem.Services.Order;
 using FoodFlowSystem.Services.Payment;
 using FoodFlowSystem.Services.Product;
@@ -99,6 +101,7 @@ builder.Services.AddValidatorsFromAssemblyContaining<UpdateFeedbackValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<UpdateFeedbackValidator>();
 //Payment
 builder.Services.AddValidatorsFromAssemblyContaining<CreatePaymentValidator>();
+//Invoice
 
 
 // Dependency Injection - Repositories
@@ -114,6 +117,7 @@ builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<ITableRepository, TableRepository>();
 builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
 
 // Dependency Injection - Services
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -124,6 +128,7 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ITableService, TableService>();
 builder.Services.AddScoped<IFeedbackService, FeedbackService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 
 // JWT 
 builder.Services.AddScoped<JwtHelper>();
@@ -177,6 +182,7 @@ builder.Services.AddAutoMapper(typeof(CategoryMapper));
 builder.Services.AddAutoMapper(typeof(TableMapper));
 builder.Services.AddAutoMapper(typeof(FeedbackMapper));
 builder.Services.AddAutoMapper(typeof(PaymentMapper));
+builder.Services.AddAutoMapper(typeof(InvoiceMapper));
 
 var app = builder.Build();
 
