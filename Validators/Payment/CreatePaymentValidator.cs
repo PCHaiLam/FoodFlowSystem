@@ -11,7 +11,6 @@ namespace FoodFlowSystem.Validators.Payment
             RuleFor(x => x.PaymentType).NotEmpty().WithMessage("PaymentType is required");
             RuleFor(x => x.PaymentMethod).NotEmpty().WithMessage("PaymentMethod is required");
             RuleFor(x => x.Amount).NotEmpty().WithMessage("Amount is required");
-            RuleFor(x => x.IsDeposit).NotEmpty().WithMessage("IsDeposit is required");
         }
     }
 }

@@ -32,10 +32,6 @@ namespace FoodFlowSystem.Entities.Payment
                 .HasDefaultValue("Pending")
                 .IsRequired();
 
-            builder.Property(p => p.IsDeposit)
-                .HasDefaultValue(false)
-                .IsRequired();
-
             builder.Property(p => p.InvoiceId)
                 .IsRequired();
 
