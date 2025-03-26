@@ -6,6 +6,5 @@
         public decimal Amount { get; set; }
         public string PaymentType { get; set; }
         public string PaymentMethod { get; set; }
-        public bool IsDeposit { get; set; }
     }
 }
