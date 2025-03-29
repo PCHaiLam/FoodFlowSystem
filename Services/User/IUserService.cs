@@ -6,6 +6,7 @@ namespace FoodFlowSystem.Services.User
     public interface IUserService
     {
         Task<IEnumerable<UserResponse>> GetUsersAsync();
+        Task<UserResponse> GetUserByIdAsync(int id);
         Task<IEnumerable<UserResponse>> GetUserByNameAsync(string name);
         Task<UserResponse> CreateUserAsync(CreateUserRequest request);
         Task<UserResponse> UpdateUserAsync(UpdateUserRequest request);

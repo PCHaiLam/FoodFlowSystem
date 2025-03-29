@@ -51,6 +51,21 @@ namespace FoodFlowSystem.Services.User
             _logger.LogInformation("User deleted successfully");
         }
 
+        public async Task<UserResponse> GetUserByIdAsync(int id)
+        {
+            var user = await _userRepository.GetByIdAsync(id);
+            if (user == null)
+            {
+                _logger.LogError("User not found");
+                throw new ApiException("User not found", 404);
+            }
+
+            var result = _mapper.Map<UserResponse>(user);
+            _logger.LogInformation("User listed successfully");
+
+            return result;
+        }
+
         public async Task<IEnumerable<UserResponse>> GetUserByNameAsync(string name)
         {
             var user = await _userRepository.GetByNameAsync(name);
