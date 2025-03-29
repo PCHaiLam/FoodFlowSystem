@@ -32,6 +32,14 @@ namespace FoodFlowSystem.Controllers
             return Ok(result);
         }
 
+        [HttpGet("id")]
+        [Authorize]
+        public async Task<IActionResult> GetUserByIdAsync([FromQuery] int id)
+        {
+            var result = await _userService.GetUserByIdAsync(id);
+            return Ok(result);
+        }
+
         [HttpPut]
         [Authorize(Roles = "2")]
         public async Task<IActionResult> UpdateUser(UpdateUserRequest request)
