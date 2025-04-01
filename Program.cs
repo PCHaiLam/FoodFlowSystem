@@ -53,6 +53,21 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigin",
+        builder =>
+        {
+            builder
+            .WithOrigins("http://localhost:5173")
+            //.AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials()
+            .WithExposedHeaders("auth_token", "refresh_token");
+        });
+});
+
 // HttpContextAccessor
 builder.Services.AddHttpContextAccessor();
 
@@ -155,8 +170,10 @@ builder.Services.AddAuthentication(options =>
     {
         OnChallenge = context =>
         {
+            Console.WriteLine("OnChallenge: " + context.Error);
             context.HandleResponse();
             context.Response.StatusCode = 401;
+            //context.Response.Headers.Append("StatusCode", "401");
             context.Response.ContentType = "application/json";
 
             var result = JsonConvert.SerializeObject(new
@@ -195,20 +212,14 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseCors("AllowSpecificOrigin");
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 // Middlewares
 app.UseMiddleware<ExceptionMiddleware>();
 app.UseMiddleware<ApiResponseMiddleware>();
-
-app.UseCors(builder =>
-{
-    builder.AllowAnyOrigin()
-           .AllowAnyMethod()
-           .AllowAnyHeader()
-           .WithExposedHeaders("auth_token", "refresh_token", "server", "date");
-});
 
 app.MapControllers();
 
