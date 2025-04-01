@@ -1,6 +1,7 @@
 ﻿using FoodFlowSystem.DTOs.Requests.Auth;
 using FoodFlowSystem.Entities.User;
 using FoodFlowSystem.Services.Auth;
+using FoodFlowSystem.Services.User;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,12 +12,17 @@ namespace FoodFlowSystem.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
-        
+        private readonly IUserService _userService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         public AuthController(
             IAuthService authService,
-            IHttpClientFactory httpClientFactory)
+            IUserService userService,
+            IHttpContextAccessor httpContextAccessor
+            )
         {
             _authService = authService;
+            _userService = userService;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         [HttpPost("google-login")]
@@ -43,6 +49,15 @@ namespace FoodFlowSystem.Controllers
             await _authService.LoginAsync(request);
             
             return Ok();
+        }
+
+        [HttpGet("verify-token")]
+        [Authorize]
+        public async Task<IActionResult> VerifyToken()
+        {
+            var userId = int.Parse(_httpContextAccessor.HttpContext.User.Claims.FirstOrDefault(c => c.Type == "user_id").Value);
+            var result = await _userService.GetUserByIdAsync(userId);
+            return Ok(result);
         }
     }
 }
