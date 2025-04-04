@@ -12,8 +12,11 @@ namespace FoodFlowSystem.Repositories.ProductVersion
 
         public async Task<ProductVersionEntity> GetLastProductVersionByProductIdAsync(int id)
         {
-            return await _dbContext.ProductVersions
-                .LastOrDefaultAsync(x => x.ID == id);
+            var result = await _dbContext.ProductVersions
+                .Where(x => x.ProductID == id)
+                .OrderByDescending(x => x.ID)
+                .FirstOrDefaultAsync();
+            return result;
         }
     }
 }
