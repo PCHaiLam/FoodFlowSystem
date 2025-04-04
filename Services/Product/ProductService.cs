@@ -21,6 +21,7 @@ namespace FoodFlowSystem.Services.Product
 
         public ProductService(
             IProductRepository productRepository,
+            IProductVersionRepository productVersionRepository,
             IMapper mapper,
             ILogger<ProductService> logger,
             IValidator<UpdateProductRequest> updateProductValidator,
@@ -28,6 +29,7 @@ namespace FoodFlowSystem.Services.Product
             )
         {
             _productRepository = productRepository;
+            _productVersionRepository = productVersionRepository;
             _mapper = mapper;
             _logger = logger;
             _updateProductValidator = updateProductValidator;
@@ -93,6 +95,12 @@ namespace FoodFlowSystem.Services.Product
             var list = await _productRepository.GetAllAsync();
             var result = _mapper.Map<IEnumerable<ProductResponse>>(list);
 
+            if (!result.Any())
+            {
+                _logger.LogInformation("No products found");
+                return result;
+            }
+
             foreach (var product in result)
             {
                 var lastProductVersion = await _productVersionRepository.GetLastProductVersionByProductIdAsync(product.ID);
@@ -102,7 +110,6 @@ namespace FoodFlowSystem.Services.Product
             _logger.LogInformation("Get all products successfully");
 
             return result;
-
         }
 
         public async Task<IEnumerable<ProductResponse>> GetAllActiveAsync()
