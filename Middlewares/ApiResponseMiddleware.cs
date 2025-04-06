@@ -1,10 +1,12 @@
-﻿using FoodFlowSystem.DTOs.Responses;
+﻿using FoodFlowSystem.DTOs;
+using FoodFlowSystem.DTOs.Responses;
 using System.Text;
 using System.Text.Json;
 
 public class ApiResponseMiddleware
 {
     private readonly RequestDelegate _next;
+    private readonly JsonSerializerOptions _jsonOptions;
 
     public ApiResponseMiddleware(RequestDelegate next)
     {
@@ -31,14 +33,28 @@ public class ApiResponseMiddleware
 
                 if (!string.IsNullOrEmpty(responseBody))
                 {
+                    bool hasStandardFormat = responseBody.Contains("\"data\":") &&
+                                          (responseBody.Contains("\"pagination\":") || !context.Items.ContainsKey("RequiresPagination"));
                     // Kiểm tra xem đã có định dạng data chưa
-                    if (!responseBody.Contains("\"data\":"))
+                    if (!hasStandardFormat)
                     {
-                        // Chuyển đổi response gốc thành đối tượng
+                        // Đọc dữ liệu từ response gốc
                         var originalData = JsonSerializer.Deserialize<object>(responseBody);
+                        object formattedResponse;
 
-                        // Tạo response mới với cấu trúc data
-                        var jsonResponse = JsonSerializer.Serialize(new { data = originalData });
+                        // Kiểm tra nếu cần pagination
+                        if (context.Items.ContainsKey("PaginationInfo") && context.Items["PaginationInfo"] != null)
+                        {
+                            var paginationInfo = (PaginationInfo)context.Items["PaginationInfo"];
+                            formattedResponse = new { data = originalData, pagination = paginationInfo };
+                        }
+                        else
+                        {
+                            formattedResponse = new { data = originalData };
+                        }
+
+                        // Serializer lại theo đúng format
+                        var jsonResponse = JsonSerializer.Serialize(formattedResponse, _jsonOptions);
 
                         // Ghi lại vào response stream
                         memoryStream.SetLength(0);
