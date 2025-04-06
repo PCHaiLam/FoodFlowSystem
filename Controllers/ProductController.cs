@@ -1,4 +1,5 @@
-﻿using FoodFlowSystem.DTOs.Requests.Product;
+﻿using FoodFlowSystem.Contexts;
+using FoodFlowSystem.DTOs.Requests.Product;
 using FoodFlowSystem.Services.Product;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -24,9 +25,22 @@ namespace FoodFlowSystem.Controllers
         }
 
         [HttpGet("active")]
-        public async Task<IActionResult> GetAllActiveAsync()
+        public async Task<IActionResult> GetAllActiveAsync([FromQuery] int page=1, [FromQuery] int size=10)
         {
-            var result = await _productService.GetAllActiveAsync();
+            var count = await _productService.CountAllActive();
+
+            var result = await _productService.GetAllActiveAsync(page, size);
+
+            this.HttpContext.SetPaginationInfo(count, page, size);
+
+            return Ok(result);
+        }
+
+        [HttpGet("id")]
+        public async Task<IActionResult> GetByIdAsync([FromQuery]int id)
+        {
+            var result = await _productService.GetByIdAsync(id);
+
             return Ok(result);
         }
 

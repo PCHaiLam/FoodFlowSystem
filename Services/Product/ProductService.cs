@@ -48,8 +48,8 @@ namespace FoodFlowSystem.Services.Product
             var checkProduct = _productRepository.IsExistProductNameAsync(request.Name);
             if (checkProduct != null)
             {
-                   _logger.LogError("Product already exists");
-                    throw new ApiException("Product already exists", 400);
+                _logger.LogError("Product already exists");
+                throw new ApiException("Product already exists", 400);
             }
 
             var product = _mapper.Map<ProductEntity>(request);
@@ -94,7 +94,6 @@ namespace FoodFlowSystem.Services.Product
         {
             var list = await _productRepository.GetAllAsync();
             var result = _mapper.Map<IEnumerable<ProductResponse>>(list);
-
             if (!result.Any())
             {
                 _logger.LogInformation("No products found");
@@ -112,10 +111,15 @@ namespace FoodFlowSystem.Services.Product
             return result;
         }
 
-        public async Task<IEnumerable<ProductResponse>> GetAllActiveAsync()
+        public async Task<IEnumerable<ProductResponse>> GetAllActiveAsync(int page, int size)
         {
-            var list = await _productRepository.GetAllActiceAsync();
+            var list = await _productRepository.GetAllActiceAsync(page,size);
             var result = _mapper.Map<IEnumerable<ProductResponse>>(list);
+            if (!result.Any())
+            {
+                _logger.LogInformation("No products found");
+                return result;
+            }
 
             foreach (var product in result)
             {
@@ -126,6 +130,20 @@ namespace FoodFlowSystem.Services.Product
             _logger.LogInformation("Get all active products successfully");
 
             return result;
+        }
+
+        public async Task<int> CountAllActive()
+        {
+            var count = await _productRepository.CountActive();
+            if (count == 0)
+            {
+                _logger.LogInformation("No products found");
+                return 0;
+            }
+
+            _logger.LogInformation("Count all active products successfully");
+
+            return count;
         }
 
         public async Task<IEnumerable<ProductResponse>> GetByNameAsync(string name)
@@ -200,6 +218,26 @@ namespace FoodFlowSystem.Services.Product
 
             var result = _mapper.Map<ProductResponse>(productUpdated);
             result.Price = request.Price;
+
+            return result;
+        }
+
+        public async Task<ProductResponse> GetByIdAsync(int id)
+        {
+            var product = await _productRepository.GetProductById(id);
+            if (product == null)
+            {
+                _logger.LogError("Product not found");
+                throw new ApiException("Product not found", 404);
+            }
+
+            var result = _mapper.Map<ProductResponse>(product);
+
+            var lastProductVersion = await _productVersionRepository.GetLastProductVersionByProductIdAsync(product.ID);
+
+            result.Price = lastProductVersion.Price;
+
+            _logger.LogInformation("Get product by id successfully: ", id);
 
             return result;
         }

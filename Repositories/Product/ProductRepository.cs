@@ -38,12 +38,22 @@ namespace FoodFlowSystem.Repositories.Product
             return _dbContext.Products.FirstOrDefaultAsync(x => x.Name == input);
         }
 
-        public async Task<IEnumerable<ProductEntity>> GetAllActiceAsync()
+        public async Task<IEnumerable<ProductEntity>> GetAllActiceAsync(int page, int size)
         {
             return await _dbContext.Products
-                            .Include(x => x.ProductVersions)
-                            .Where(x => x.ProductVersions.Any(x => x.IsActive == true))
-                            .ToListAsync();
+                        .Include(x => x.ProductVersions)
+                        .Where(x => x.ProductVersions.Any(x => x.IsActive == true))
+                        .Skip((page - 1) * size)
+                        .Take(size)
+                        .ToListAsync();
+        }
+
+        public async Task<int> CountActive()
+        {
+            return await _dbContext.Products
+                        .Include(x => x.ProductVersions)
+                        .Where(x => x.ProductVersions.Any(x => x.IsActive == true))
+                        .CountAsync();
         }
     }
 }
