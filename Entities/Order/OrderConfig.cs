@@ -11,20 +11,43 @@ namespace FoodFlowSystem.Entities.Order
             builder.HasKey(x => x.ID);
             builder.Property(x => x.ID).ValueGeneratedOnAdd();
 
+            builder.Property(x => x.OrderType)
+                .HasMaxLength(30)
+                .IsRequired();
+
+            builder.Property(x => x.NumOfGuests)
+                .IsRequired(false);
+
+            builder.Property(x => x.HasReservation)
+                .IsRequired(false);
+
+            builder.Property(x => x.HasFoodOrder)
+                .IsRequired(false);
+
+            builder.Property(x => x.ReservationDate)
+                .HasColumnType("date")
+                .IsRequired(false);
+
+            builder.Property(x => x.ReservationTime)
+                .HasColumnType("time")
+                .IsRequired(false);
+
             builder.Property(x => x.TotalAmount)
                 .HasColumnType("decimal(10,2)")
-                .IsRequired(false);
+                .HasDefaultValue(0)
+                .IsRequired();
 
             builder.Property(x => x.Status)
                 .HasMaxLength(30)
+                .HasDefaultValue("Pending")
                 .IsRequired();
+
+            builder.Property(x => x.Notes)
+                .IsRequired(false);
 
             builder.Property(x => x.CreatedAt)
                 .HasColumnType("datetime")
                 .IsRequired();
-
-            builder.Property(x => x.ReservationID)
-                .IsRequired(false);
 
             builder.Property(x => x.TableID)
                 .IsRequired(false);
@@ -35,17 +58,12 @@ namespace FoodFlowSystem.Entities.Order
             builder.HasOne(u => u.User)
                 .WithMany(o => o.Orders)
                 .HasForeignKey(o => o.UserID)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            builder.HasOne(r => r.Reservation)
-                .WithMany(o => o.Orders)
-                .HasForeignKey(o => o.ReservationID)
                 .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasOne(p => p.Table)
                 .WithMany(o => o.Orders)
                 .HasForeignKey(o => o.TableID)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

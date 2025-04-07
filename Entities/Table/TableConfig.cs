@@ -11,11 +11,16 @@ namespace FoodFlowSystem.Entities.Table
             builder.HasKey(t => t.ID);
             builder.Property(t => t.ID).ValueGeneratedOnAdd();
 
+            builder.Property(t => t.Name)
+                .HasMaxLength(50)
+                .IsRequired();
+
             builder.Property(t => t.Capacity)
                 .IsRequired();
 
             builder.Property(t => t.Status)
                 .HasMaxLength(30)
+                .HasDefaultValue("Available")
                 .IsRequired();
 
             builder.Property(t => t.CreatedAt)

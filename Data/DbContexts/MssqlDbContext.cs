@@ -8,7 +8,6 @@ using FoodFlowSystem.Entities.OrderItem;
 using FoodFlowSystem.Entities.Payment;
 using FoodFlowSystem.Entities.Product;
 using FoodFlowSystem.Entities.ProductVersions;
-using FoodFlowSystem.Entities.Reservation;
 using FoodFlowSystem.Entities.Role;
 using FoodFlowSystem.Entities.Table;
 using FoodFlowSystem.Entities.User;
@@ -41,7 +40,6 @@ namespace FoodFlowSystem.Data.DbContexts
         public DbSet<CategoryEntity> Categories { get; set; }
         public DbSet<TableEntity> Tables { get; set; }
         public DbSet<FeedbackEntity> Feedbacks { get; set; }
-        public DbSet<ReservationEntity> Reservations { get; set; }
         public DbSet<OAuthEntity> OAuths { get; set; }
         public DbSet<ProductVersionEntity> ProductVersions { get; set; }
 
@@ -60,7 +58,6 @@ namespace FoodFlowSystem.Data.DbContexts
             modelBuilder.ApplyConfiguration(new CategoryConfig());
             modelBuilder.ApplyConfiguration(new TableConfig());
             modelBuilder.ApplyConfiguration(new FeedbackConfig());
-            modelBuilder.ApplyConfiguration(new ReservationConfig());
             modelBuilder.ApplyConfiguration(new OAuthConfig());
             modelBuilder.ApplyConfiguration(new ProductVersionConfig());
         }

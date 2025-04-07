@@ -9,7 +9,7 @@ namespace FoodFlowSystem.Repositories.Feedback
         public FeedbackRepository(MssqlDbContext context) : base(context)
         {
         }
-
+        
         public async Task<double> GetAverageRateByProductIdAsync(int id)
         {
             var feedbacks = await _dbContext.Feedbacks

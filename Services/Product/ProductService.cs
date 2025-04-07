@@ -42,7 +42,12 @@ namespace FoodFlowSystem.Services.Product
             if (!validationResult.IsValid)
             {
                 _logger.LogError("Validation failed");
-                throw new ApiException("Invalid input", 400);
+                var errors = validationResult.Errors.Select(e => new
+                {
+                    Field = e.PropertyName,
+                    Message = e.ErrorMessage
+                });
+                throw new ApiException("Invalid input", 400, errors);
             }
 
             var checkProduct = _productRepository.IsExistProductNameAsync(request.Name);
@@ -184,7 +189,12 @@ namespace FoodFlowSystem.Services.Product
             if (!validationResult.IsValid)
             {
                 _logger.LogError("Invalid Input");
-                throw new ApiException("Invalid Input", 400);
+                var errors = validationResult.Errors.Select(e => new
+                {
+                    Field = e.PropertyName,
+                    Message = e.ErrorMessage
+                });
+                throw new ApiException("Invalid Input", 400, errors);
             }
 
             var product = await _productRepository.GetProductById(request.ID);

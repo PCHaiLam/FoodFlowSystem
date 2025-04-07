@@ -46,60 +46,123 @@ namespace FoodFlowSystem.Services.Order
 
         public async Task<OrderResponse> CreateOrderAsync(CreateOrderRequest request)
         {
-            var userId = this.GetCurrentUserId();
             var validationResult = await _createOrderValidator.ValidateAsync(request);
 
             if (!validationResult.IsValid)
             {
                 _logger.LogError("Validation create order request failed");
-                throw new ApiException("Invalid create order input.");
+                var errors = validationResult.Errors.Select(e => new
+                {
+                    Field = e.PropertyName,
+                    Message = e.ErrorMessage
+                });
+                throw new ApiException("Invalid create order input.", 400, errors);
+            }
+
+            var userId = this.GetCurrentUserId();
+
+            // role: 1-admin, 2-customer, 3-staff
+            var userRole = this.GetCurrentUserRole();
+
+            string orderType = "in_restaurant";
+            if (userRole == 2)
+            {
+                orderType = "online";
+            }
+
+            //check 4 use case
+            //1. order in restaurant
+            //2. order online - has reservation (not order food)
+            //3. order online - has food order (not reservation)
+            //4. order online - has reservation and food order
+
+            if (orderType == "in_restaurant")
+            {
+                if (request.TableID == null)
+                {
+                    _logger.LogError("Table is invalid");
+                    throw new ApiException("Table is invalid", 400);
+                }
+
+                if (request.OrderItems.Count == 0)
+                {
+                    _logger.LogError("Order item is required");
+                    throw new ApiException("Order item is required", 400);
+                }
+            }
+            else if (orderType == "online")
+            {
+                // has reservation (not order food)
+                if ((request.ReservationTime != null && request.ReservationDate != null) && request.OrderItems.Count == 0)
+                {
+                    _logger.LogError("Reservation date and time is required");
+                    throw new ApiException("Reservation date and time is required", 400);
+                }
+
+                // has food order (not reservation)
+                if ((request.ReservationTime == null && request.ReservationDate == null) && request.OrderItems.Count > 0)
+                {
+                    _logger.LogError("Order item is required");
+                    throw new ApiException("Order item is required", 400);
+                }
+
+                // has reservation and food order
+                if ((request.ReservationTime == null && request.ReservationDate == null) && request.OrderItems.Count == 0)
+                {
+                    _logger.LogError("Order is invalid");
+                    throw new ApiException("Order is invalid", 400);
+                }
             }
 
             var order = _mapper.Map<OrderEntity>(request);
             order.UserID = userId;
             order.Status = "Pending";
+            order.OrderType = orderType;
 
             var newOrder = await _orderRepository.AddAsync(order);
 
-            foreach (var item in request.OrderItems)
+            if (request.OrderItems.Any())
             {
-                var validatorOrderItem = await _createOrderItemValidator.ValidateAsync(item);
-                if (!validatorOrderItem.IsValid)
+                foreach (var item in request.OrderItems)
                 {
-                    _logger.LogError("Validation create order item request failed");
-                    throw new ApiException("Invalid create order item input.");
+                    var validatorOrderItem = await _createOrderItemValidator.ValidateAsync(item);
+                    if (!validatorOrderItem.IsValid)
+                    {
+                        _logger.LogError("Validation create order item request failed");
+                        throw new ApiException("Invalid create order item input.");
+                    }
+
+                    var product = await _productRepository.GetByIdAsync(item.ProductID);
+                    var lastVersion = product.ProductVersions.LastOrDefault(x => x.IsActive == true);
+
+                    if (lastVersion == null)
+                    {
+                        _logger.LogError("Product is inactive");
+                        throw new ApiException("Product is inactive.", 400);
+                    }
+
+                    if (product == null)
+                    {
+                        _logger.LogError("Product not found");
+                        throw new ApiException("Product not found.", 404);
+                    }
+
+                    if (product.Quantity < item.Quantity)
+                    {
+                        _logger.LogError("Product out of stock");
+                        throw new ApiException($"Product out of stock. Remaining products: {item.Quantity}", 400);
+                    }
+
+                    var newOrderItem = _mapper.Map<OrderItemEntity>(item);
+
+                    newOrderItem.OrderID = newOrder.ID;
+                    newOrderItem.Price = lastVersion.Price;
+
+                    await _orderItemRepository.AddAsync(newOrderItem);
+
+                    product.Quantity -= item.Quantity;
+                    await _productRepository.UpdateAsync(product);
                 }
-
-                var product = await _productRepository.GetByIdAsync(item.ProductID);
-                var lastVersion = product.ProductVersions.LastOrDefault(x => x.IsActive == true);
-
-                if (lastVersion == null)
-                {
-                    _logger.LogError("Product is inactive");
-                    throw new ApiException("Product is inactive.", 400);
-                }
-
-                if (product == null)
-                {
-                    _logger.LogError("Product not found");
-                    throw new ApiException("Product not found.", 404);
-                }
-
-                if (product.Quantity < item.Quantity)
-                {
-                    _logger.LogError("Product out of stock");
-                    throw new ApiException($"Product out of stock. Remaining products: {item.Quantity}", 400);
-                }
-
-                var newOrderItem = _mapper.Map<OrderItemEntity>(item);
-
-                newOrderItem.OrderID = newOrder.ID;
-                newOrderItem.Price = lastVersion.Price;
-
-                await _orderItemRepository.AddAsync(newOrderItem);
-
-                product.Quantity -= item.Quantity;
-                await _productRepository.UpdateAsync(product);
             }
 
             _logger.LogInformation("Order created successfully");
@@ -109,8 +172,27 @@ namespace FoodFlowSystem.Services.Order
             var result = _mapper.Map<OrderResponse>(newOrder);
             result.ListOrderItems = _mapper.Map<ICollection<OrderItemResponse>>(listOI);
 
-            return _mapper.Map<OrderResponse>(result);
+            return result;
         }
+
+        // if the order is online, send notifications to the customer and the restaurant
+        //private async Task SendOrderNotifications(OrderEntity order, string orderType)
+        //{
+        //    // Different notification strategies based on order type
+        //    if (orderType == "online")
+        //    {
+        //        // Send confirmation email to customer
+        //        await _notificationService.SendOrderConfirmationEmailAsync(order);
+
+        //        // Notify restaurant about online order
+        //        await _notificationService.NotifyRestaurantAboutOrderAsync(order);
+        //    }
+        //    else // in_restaurant
+        //    {
+        //        // Maybe notify kitchen staff
+        //        await _notificationService.NotifyKitchenAboutOrderAsync(order);
+        //    }
+        //}
 
         public async Task DeleteOrderAsync(int id)
         {
@@ -205,7 +287,12 @@ namespace FoodFlowSystem.Services.Order
             if (!validationResult.IsValid)
             {
                 _logger.LogError("Validation update order request failed");
-                throw new ApiException("Invalid update order input.");
+                var errors = validationResult.Errors.Select(e => new
+                {
+                    Field = e.PropertyName,
+                    Message = e.ErrorMessage
+                });
+                throw new ApiException("Invalid update order input.", 400, errors);
             }
 
             var order = await _orderRepository.GetByIdAsync(request.OrderID);
@@ -253,9 +340,9 @@ namespace FoodFlowSystem.Services.Order
                     await _productRepository.UpdateAsync(product);
 
                     await _orderItemRepository.AddAsync(newOrderItem);
-                } 
+                }
                 // If the order item is not null, update the quantity
-                else 
+                else
                 {
                     var quantityDiff = item.Quantity - orderItem.Quantity;
 

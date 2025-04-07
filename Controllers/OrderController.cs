@@ -1,6 +1,5 @@
 ﻿using FoodFlowSystem.DTOs.Requests.Order;
 using FoodFlowSystem.Services.Order;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FoodFlowSystem.Controllers
@@ -30,8 +29,8 @@ namespace FoodFlowSystem.Controllers
             return Ok(order);
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetOrder([FromBody] int id)
+        [HttpGet("order-id")]
+        public async Task<IActionResult> GetOrder([FromQuery] int id)
         {
             var order = await _orderService.GetOrderById(id);
             return Ok(order);

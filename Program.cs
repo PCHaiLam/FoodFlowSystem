@@ -8,22 +8,33 @@ using FoodFlowSystem.Middlewares;
 using FoodFlowSystem.Repositories;
 using FoodFlowSystem.Repositories.Auth;
 using FoodFlowSystem.Repositories.Category;
+using FoodFlowSystem.Repositories.Feedback;
+using FoodFlowSystem.Repositories.Invoice;
 using FoodFlowSystem.Repositories.OAuth;
 using FoodFlowSystem.Repositories.Order;
 using FoodFlowSystem.Repositories.OrderItem;
+using FoodFlowSystem.Repositories.Payment;
 using FoodFlowSystem.Repositories.Product;
 using FoodFlowSystem.Repositories.ProductVersion;
+using FoodFlowSystem.Repositories.Table;
 using FoodFlowSystem.Repositories.User;
 using FoodFlowSystem.Services.Auth;
 using FoodFlowSystem.Services.Category;
+using FoodFlowSystem.Services.Feedback;
+using FoodFlowSystem.Services.Invoice;
 using FoodFlowSystem.Services.Order;
+using FoodFlowSystem.Services.Payment;
 using FoodFlowSystem.Services.Product;
+using FoodFlowSystem.Services.Table;
 using FoodFlowSystem.Services.User;
 using FoodFlowSystem.Validators.Auth;
 using FoodFlowSystem.Validators.Category;
+using FoodFlowSystem.Validators.Feedback;
 using FoodFlowSystem.Validators.Order;
 using FoodFlowSystem.Validators.OrderItem;
+using FoodFlowSystem.Validators.Payment;
 using FoodFlowSystem.Validators.Product;
+using FoodFlowSystem.Validators.Table;
 using FoodFlowSystem.Validators.User;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -41,6 +52,21 @@ builder.Services.AddControllers()
     }); ;
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigin",
+        builder =>
+        {
+            builder
+            .WithOrigins("http://localhost:5173")
+            //.AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials()
+            .WithExposedHeaders("auth_token", "refresh_token");
+        });
+});
 
 // HttpContextAccessor
 builder.Services.AddHttpContextAccessor();
@@ -82,6 +108,15 @@ builder.Services.AddValidatorsFromAssemblyContaining<CreateOrderValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<UpdateOrderValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<CreateOrderItemValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<UpdateOrderItemValidator>();
+//Table
+builder.Services.AddValidatorsFromAssemblyContaining<CreateTableValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<UpdateTableValidator>();
+//Feedback
+builder.Services.AddValidatorsFromAssemblyContaining<UpdateFeedbackValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<UpdateFeedbackValidator>();
+//Payment
+builder.Services.AddValidatorsFromAssemblyContaining<CreatePaymentValidator>();
+//Invoice
 
 
 // Dependency Injection - Repositories
@@ -94,6 +129,10 @@ builder.Services.AddScoped<IProductVersionRepository, ProductVersionRepository>(
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IOrderItemRepository, OrderItemRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<ITableRepository, TableRepository>();
+builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
 
 // Dependency Injection - Services
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -101,6 +140,10 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<ITableService, TableService>();
+builder.Services.AddScoped<IFeedbackService, FeedbackService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 
 // JWT 
 builder.Services.AddScoped<JwtHelper>();
@@ -127,8 +170,10 @@ builder.Services.AddAuthentication(options =>
     {
         OnChallenge = context =>
         {
+            Console.WriteLine("OnChallenge: " + context.Error);
             context.HandleResponse();
             context.Response.StatusCode = 401;
+            //context.Response.Headers.Append("StatusCode", "401");
             context.Response.ContentType = "application/json";
 
             var result = JsonConvert.SerializeObject(new
@@ -151,6 +196,10 @@ builder.Services.AddAutoMapper(typeof(ProductMapper));
 builder.Services.AddAutoMapper(typeof(OrderMapper));
 builder.Services.AddAutoMapper(typeof(OrderItemMapper));
 builder.Services.AddAutoMapper(typeof(CategoryMapper));
+builder.Services.AddAutoMapper(typeof(TableMapper));
+builder.Services.AddAutoMapper(typeof(FeedbackMapper));
+builder.Services.AddAutoMapper(typeof(PaymentMapper));
+builder.Services.AddAutoMapper(typeof(InvoiceMapper));
 
 var app = builder.Build();
 
@@ -163,20 +212,14 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseCors("AllowSpecificOrigin");
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 // Middlewares
 app.UseMiddleware<ExceptionMiddleware>();
 app.UseMiddleware<ApiResponseMiddleware>();
-
-app.UseCors(builder =>
-{
-    builder.AllowAnyOrigin()
-           .AllowAnyMethod()
-           .AllowAnyHeader()
-           .WithExposedHeaders("auth_token", "refresh_token", "server", "date");
-});
 
 app.MapControllers();
 
