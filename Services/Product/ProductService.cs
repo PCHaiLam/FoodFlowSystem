@@ -116,9 +116,9 @@ namespace FoodFlowSystem.Services.Product
             return result;
         }
 
-        public async Task<IEnumerable<ProductResponse>> GetAllActiveAsync(int page, int size)
+        public async Task<IEnumerable<ProductResponse>> GetAllActiveAsync(int page, int pageSize, string filter, string search, string category, int? minPrice, int? maxPrice, string rating, string sort)
         {
-            var list = await _productRepository.GetAllActiceAsync(page,size);
+            var list = await _productRepository.GetAllActiceAsync(page, pageSize, filter, search, category, minPrice, maxPrice, rating, sort);
             var result = _mapper.Map<IEnumerable<ProductResponse>>(list);
             if (!result.Any())
             {
