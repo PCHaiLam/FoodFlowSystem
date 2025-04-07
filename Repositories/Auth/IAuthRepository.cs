@@ -4,6 +4,6 @@ namespace FoodFlowSystem.Repositories.Auth
 {
     public interface IAuthRepository : IBaseRepository<UserEntity>
     {
-        Task<UserEntity> CheckUser(string email, string password);
+        Task<UserEntity> GetUserByEmailAsync(string email);
     }
 }

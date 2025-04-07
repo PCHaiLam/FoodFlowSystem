@@ -11,9 +11,9 @@ namespace FoodFlowSystem.Repositories.Auth
 
         }
 
-        public async Task<UserEntity> CheckUser(string email, string password)
+        public async Task<UserEntity> GetUserByEmailAsync(string email)
         {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Email == email && x.HashPassword == password);
+            var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Email == email);
             return user;
         }
     }
