@@ -124,16 +124,20 @@ namespace FoodFlowSystem.Services.Auth
                 throw new ApiException("Invalid email or password.", 400, errors);
             }
 
-            var user = await _authRepository.CheckUser(request.Email, request.Password);
+            var user = await _authRepository.GetUserByEmailAsync(request.Email);
             if (user == null)
             {
-                _logger.LogError("Email or password wrong!");
-                var errors = validationResult.Errors.Select(e => new
+                _logger.LogError("User doesn't exist");
+                throw new ApiException("User doesn't exist", 400);
+            } 
+            else
+            {
+                var passWordHashed = HashPassword.Hash(request.Password);
+                if (user.HashPassword != passWordHashed)
                 {
-                    Field = e.PropertyName,
-                    Message = e.ErrorMessage
-                });
-                throw new ApiException("Email or password wrong!", 400, errors);
+                    _logger.LogError("Invalid password");
+                    throw new ApiException("Invalid password", 400);
+                }
             }
 
             var claims = new[]
