@@ -48,7 +48,7 @@ namespace FoodFlowSystem.Services.Auth
             _registerValidator = registerValidator;
         }
 
-        public async Task<UserResponse> LoginWithGoogleAsync(GoogleLoginRequest request)
+        public async Task LoginWithGoogleAsync(GoogleLoginRequest request)
         {
             var payload = await GoogleJsonWebSignature.ValidateAsync(request.IdToken);
             if (payload == null)
@@ -88,13 +88,13 @@ namespace FoodFlowSystem.Services.Auth
 
             var claims = new[]
             {
-                new Claim("user_id", user.ID.ToString()),
-                new Claim("first_name", user.FirstName),
-                new Claim("last_name", user.LastName ?? ""),
-                new Claim("phone", user.Phone ?? ""),
-                new Claim("photo_url", user.PhotoUrl ?? ""),
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Role, user.RoleID.ToString()),
+                new Claim("userId", user.ID.ToString()),
+                new Claim("firstName", user.FirstName),
+                new Claim("lastName", user.LastName ?? ""),
+                new Claim("phoneNumber", user.Phone ?? ""),
+                new Claim("photoUrl", user.PhotoUrl ?? ""),
+                new Claim("email", user.Email),
+                new Claim("roleId", user.RoleID.ToString()),
             };
 
             var token = _jwtHelper.GenerateToken(claims);
@@ -105,9 +105,6 @@ namespace FoodFlowSystem.Services.Auth
             responseHeaders.Append("refresh_token", refreshToken);
 
             _logger.LogInformation("Login with google success");
-
-            var response = _mapper.Map<UserResponse>(user);
-            return response;
         }   
         
         public async Task LoginAsync(LoginRequest request)
@@ -142,12 +139,12 @@ namespace FoodFlowSystem.Services.Auth
 
             var claims = new[]
             {
-                new Claim("user_id", user.ID.ToString()),
-                new Claim("first_name", user.FirstName),
-                new Claim("last_name", user.LastName),
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim("phone_number", user.Phone),
-                new Claim(ClaimTypes.Role, user.RoleID.ToString()),
+                new Claim("userId", user.ID.ToString()),
+                new Claim("firstName", user.FirstName),
+                new Claim("lastName", user.LastName),
+                new Claim("email", user.Email),
+                new Claim("phoneNumber", user.Phone),
+                new Claim("roleId", user.RoleID.ToString()),
             };
 
             var token = _jwtHelper.GenerateToken(claims);
