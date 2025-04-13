@@ -29,9 +29,9 @@ namespace FoodFlowSystem.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Google([FromBody] GoogleLoginRequest request)
         {
-            var  response = await _authService.LoginWithGoogleAsync(request);
+            await _authService.LoginWithGoogleAsync(request);
             
-            return Ok(response);
+            return Ok();
         }
 
         [HttpPost("register")]
@@ -49,15 +49,6 @@ namespace FoodFlowSystem.Controllers
             await _authService.LoginAsync(request);
             
             return Ok();
-        }
-
-        [HttpGet("verify-token")]
-        [Authorize]
-        public async Task<IActionResult> VerifyToken()
-        {
-            var userId = int.Parse(_httpContextAccessor.HttpContext.User.Claims.FirstOrDefault(c => c.Type == "user_id").Value);
-            var result = await _userService.GetUserByIdAsync(userId);
-            return Ok(result);
         }
     }
 }
