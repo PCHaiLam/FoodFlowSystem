@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using FluentValidation;
+using FoodFlowSystem.Data.DbContexts;
 using FoodFlowSystem.DTOs.Requests.Order;
 using FoodFlowSystem.DTOs.Requests.OrderItem;
 using FoodFlowSystem.DTOs.Responses;
@@ -9,14 +10,19 @@ using FoodFlowSystem.Middlewares.Exceptions;
 using FoodFlowSystem.Repositories.Order;
 using FoodFlowSystem.Repositories.OrderItem;
 using FoodFlowSystem.Repositories.Product;
+using FoodFlowSystem.Repositories.ProductVersion;
+using FoodFlowSystem.Repositories.User;
 
 namespace FoodFlowSystem.Services.Order
 {
     public class OrderService : BaseService, IOrderService
     {
+        private readonly MssqlDbContext _dbContext;
+        private readonly IUserRepository _userRepository;
         private readonly IOrderRepository _orderRepository;
         private readonly IOrderItemRepository _orderItemRepository;
         private readonly IProductRepository _productRepository;
+        private readonly IProductVersionRepository _productVersionRepository;
         private readonly IMapper _mapper;
         private readonly ILogger<OrderService> _logger;
         private readonly IValidator<CreateOrderRequest> _createOrderValidator;
@@ -26,22 +32,32 @@ namespace FoodFlowSystem.Services.Order
 
         public OrderService(
             IHttpContextAccessor httpContextAccessor,
+            MssqlDbContext dbContext,
+            IUserRepository userRepository,
             IOrderRepository orderRepository,
             IOrderItemRepository orderItemRepository,
             IProductRepository productRepository,
+            IProductVersionRepository productVersionRepository,
             IMapper mapper,
             ILogger<OrderService> logger,
             IValidator<CreateOrderRequest> createOrderValidator,
-            IValidator<UpdateOrderRequest> updateOrderValidator
+            IValidator<UpdateOrderRequest> updateOrderValidator,
+            IValidator<CreateOrderItemRequest> createOrderItemValidator,
+            IValidator<UpdateOrderItemRequest> updateOrderItemValidator
             ) : base(httpContextAccessor)
         {
+            _dbContext = dbContext;
+            _userRepository = userRepository;
             _orderRepository = orderRepository;
             _orderItemRepository = orderItemRepository;
             _productRepository = productRepository;
+            _productVersionRepository = productVersionRepository;
             _mapper = mapper;
             _logger = logger;
             _createOrderValidator = createOrderValidator;
             _updateOrderValidator = updateOrderValidator;
+            _createOrderItemValidator = createOrderItemValidator;
+            _updateOrderItemValidator = updateOrderItemValidator;
         }
 
         public async Task<OrderResponse> CreateOrderAsync(CreateOrderRequest request)
@@ -58,8 +74,6 @@ namespace FoodFlowSystem.Services.Order
                 });
                 throw new ApiException("Invalid create order input.", 400, errors);
             }
-
-            var userId = this.GetCurrentUserId();
 
             // role: 1-admin, 2-customer, 3-staff
             var userRole = this.GetCurrentUserRole();
@@ -78,48 +92,93 @@ namespace FoodFlowSystem.Services.Order
 
             if (orderType == "in_restaurant")
             {
-                if (request.TableID == null)
+                if (request.TableId == null || request.TableId == 0)
                 {
-                    _logger.LogError("Table is invalid");
-                    throw new ApiException("Table is invalid", 400);
+                    _logger.LogError("Bàn không hợp lệ");
+                    throw new ApiException("Bàn không hợp lệ", 400);
                 }
 
                 if (request.OrderItems.Count == 0)
                 {
-                    _logger.LogError("Order item is required");
-                    throw new ApiException("Order item is required", 400);
+                    _logger.LogError("Vui lòng chọn ít nhất một món ăn");
+                    throw new ApiException("Vui lòng chọn ít nhất một món ăn", 400);
                 }
             }
+
             else if (orderType == "online")
             {
-                // has reservation (not order food)
-                if ((request.ReservationTime != null && request.ReservationDate != null) && request.OrderItems.Count == 0)
+                bool hasReservationDate = request.ReservationDate != null;
+                bool hasReservationTime = request.ReservationTime != null;
+                bool hasTable = request.TableId != null && request.TableId != 0;
+                bool hasOrderItems = request.OrderItems != null && request.OrderItems.Count > 0;
+
+                // Trường hợp 1: Chỉ đặt bàn (không đặt món)
+                if (hasTable && !hasOrderItems)
                 {
-                    _logger.LogError("Reservation date and time is required");
-                    throw new ApiException("Reservation date and time is required", 400);
+                    // Kiểm tra điều kiện bắt buộc của đặt bàn (cần có ngày và giờ)
+                    if (!hasReservationDate)
+                    {
+                        _logger.LogError("Thiếu ngày đặt bàn");
+                        throw new ApiException("Vui lòng chọn ngày đặt bàn", 400);
+                    }
+
+                    if (!hasReservationTime)
+                    {
+                        _logger.LogError("Thiếu giờ đặt bàn");
+                        throw new ApiException("Vui lòng chọn giờ đặt bàn", 400);
+                    }
                 }
 
-                // has food order (not reservation)
-                if ((request.ReservationTime == null && request.ReservationDate == null) && request.OrderItems.Count > 0)
+                // Trường hợp 2: Chỉ đặt món (không đặt bàn)
+                else if (!hasTable && hasOrderItems)
                 {
-                    _logger.LogError("Order item is required");
-                    throw new ApiException("Order item is required", 400);
+                    // Kiểm tra điều kiện bắt buộc của đặt món (chỉ cần thời gian)
+                    if (!hasReservationTime)
+                    {
+                        _logger.LogError("Thiếu thời gian đặt món");
+                        throw new ApiException("Vui lòng chọn thời gian đặt món", 400);
+                    }
                 }
 
-                // has reservation and food order
-                if ((request.ReservationTime == null && request.ReservationDate == null) && request.OrderItems.Count == 0)
+                // Trường hợp 3: Đặt cả bàn và món
+                else if (hasTable && hasOrderItems)
                 {
-                    _logger.LogError("Order is invalid");
-                    throw new ApiException("Order is invalid", 400);
+                    // Kiểm tra đầy đủ 4 điều kiện
+                    if (!hasReservationDate)
+                    {
+                        _logger.LogError("Thiếu ngày đặt bàn và món");
+                        throw new ApiException("Vui lòng chọn ngày đặt bàn và món", 400);
+                    }
+
+                    if (!hasReservationTime)
+                    {
+                        _logger.LogError("Thiếu giờ đặt bàn và món");
+                        throw new ApiException("Vui lòng chọn giờ đặt bàn và món", 400);
+                    }
+                }
+
+                // Trường hợp 4: Không đặt gì cả
+                else if (!hasTable && !hasOrderItems)
+                {
+                    _logger.LogError("Đơn hàng trống");
+                    throw new ApiException("Vui lòng chọn món hoặc đặt bàn", 400);
                 }
             }
 
+            var userId = this.GetCurrentUserId();
+            var user = await _userRepository.GetByIdAsync(userId);
+            user.Phone = request.Phone;
+            _userRepository.UpdateWithoutSaving(user);
+
             var order = _mapper.Map<OrderEntity>(request);
+            order.TableID = request.TableId == null || request.TableId == 0 ? null : request.TableId;
             order.UserID = userId;
             order.Status = "Pending";
             order.OrderType = orderType;
+            order.OrderItems = null;
+            order.TotalAmount = 0;
 
-            var newOrder = await _orderRepository.AddAsync(order);
+            var orderItems = new List<OrderItemEntity>();
 
             if (request.OrderItems.Any())
             {
@@ -129,50 +188,73 @@ namespace FoodFlowSystem.Services.Order
                     if (!validatorOrderItem.IsValid)
                     {
                         _logger.LogError("Validation create order item request failed");
-                        throw new ApiException("Invalid create order item input.");
+                        var errors = validationResult.Errors.Select(e => new
+                        {
+                            Field = e.PropertyName,
+                            Message = e.ErrorMessage
+                        });
+                        throw new ApiException("Giỏ hàng không hợp lệ.", 400, errors);
                     }
 
-                    var product = await _productRepository.GetByIdAsync(item.ProductID);
-                    var lastVersion = product.ProductVersions.LastOrDefault(x => x.IsActive == true);
+                    var product = await _productRepository.GetByIdAsync(item.ProductId);
+                    var lastVersion = await _productVersionRepository.GetLastProductVersionByProductIdAsync(item.ProductId);
 
                     if (lastVersion == null)
                     {
                         _logger.LogError("Product is inactive");
-                        throw new ApiException("Product is inactive.", 400);
+                        throw new ApiException("Sản phẩm không khả dụng.", 400);
                     }
 
                     if (product == null)
                     {
                         _logger.LogError("Product not found");
-                        throw new ApiException("Product not found.", 404);
+                        throw new ApiException("Không tim thấy sản phẩm.", 404);
                     }
 
                     if (product.Quantity < item.Quantity)
                     {
                         _logger.LogError("Product out of stock");
-                        throw new ApiException($"Product out of stock. Remaining products: {item.Quantity}", 400);
+                        throw new ApiException($"Không đủ sản phẩm {product.Name}.Số lượng hiện tại: {product.Quantity}", 400);
                     }
 
                     var newOrderItem = _mapper.Map<OrderItemEntity>(item);
-
-                    newOrderItem.OrderID = newOrder.ID;
                     newOrderItem.Price = lastVersion.Price;
+                    newOrderItem.Note = item.Note;
 
-                    await _orderItemRepository.AddAsync(newOrderItem);
+                    order.TotalAmount += newOrderItem.Price * newOrderItem.Quantity;
+
+                    orderItems.Add(newOrderItem);
 
                     product.Quantity -= item.Quantity;
-                    await _productRepository.UpdateAsync(product);
+                    _productRepository.UpdateWithoutSaving(product);
                 }
+
+                order.OrderItems = orderItems;
             }
 
-            _logger.LogInformation("Order created successfully");
+            using var transaction = await _dbContext.Database.BeginTransactionAsync();
 
-            var listOI = await _orderItemRepository.GetByOrderId(newOrder.ID);
+            try
+            {
+                var newOrder = await _orderRepository.AddAsync(order);
 
-            var result = _mapper.Map<OrderResponse>(newOrder);
-            result.ListOrderItems = _mapper.Map<ICollection<OrderItemResponse>>(listOI);
+                await _dbContext.SaveChangesAsync();
+                await transaction.CommitAsync();
 
-            return result;
+                _logger.LogInformation("Order created successfully");
+
+                var listOI = await _orderItemRepository.GetByOrderId(newOrder.ID);
+                var result = _mapper.Map<OrderResponse>(newOrder);
+                result.OrderItems = _mapper.Map<ICollection<OrderItemResponse>>(listOI);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "Error during order creation");
+                throw new ApiException("Lỗi hệ thống", 500);
+            }
         }
 
         // if the order is online, send notifications to the customer and the restaurant
@@ -239,7 +321,7 @@ namespace FoodFlowSystem.Services.Order
             var listOI = await _orderItemRepository.GetByOrderId(order.ID);
 
             var result = _mapper.Map<OrderResponse>(order);
-            result.ListOrderItems = _mapper.Map<ICollection<OrderItemResponse>>(listOI);
+            result.OrderItems = _mapper.Map<ICollection<OrderItemResponse>>(listOI);
 
             _logger.LogInformation("Order listed successfully");
 
@@ -377,7 +459,7 @@ namespace FoodFlowSystem.Services.Order
 
             var listOI = await _orderItemRepository.GetByOrderId(order.ID);
             var result = _mapper.Map<OrderResponse>(newOrder);
-            result.ListOrderItems = _mapper.Map<ICollection<OrderItemResponse>>(listOI);
+            result.OrderItems = _mapper.Map<ICollection<OrderItemResponse>>(listOI);
 
             return result;
         }
