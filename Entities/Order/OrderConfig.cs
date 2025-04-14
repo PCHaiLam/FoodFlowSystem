@@ -18,12 +18,6 @@ namespace FoodFlowSystem.Entities.Order
             builder.Property(x => x.NumOfGuests)
                 .IsRequired(false);
 
-            builder.Property(x => x.HasReservation)
-                .IsRequired(false);
-
-            builder.Property(x => x.HasFoodOrder)
-                .IsRequired(false);
-
             builder.Property(x => x.ReservationDate)
                 .HasColumnType("date")
                 .IsRequired(false);

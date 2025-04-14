@@ -51,5 +51,11 @@ namespace FoodFlowSystem.Repositories
             await _dbContext.SaveChangesAsync();
             return entity;
         }
+
+        public T UpdateWithoutSaving(T entity)
+        {
+            _dbSet.Update(entity);
+            return entity;
+        }
     }
 }

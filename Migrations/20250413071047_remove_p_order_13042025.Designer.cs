@@ -4,6 +4,7 @@ using FoodFlowSystem.Data.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FoodFlowSystem.Migrations
 {
     [DbContext(typeof(MssqlDbContext))]
-    partial class MssqlDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250413071047_remove_p_order_13042025")]
+    partial class remove_p_order_13042025
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -275,9 +278,6 @@ namespace FoodFlowSystem.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime");
-
-                    b.Property<string>("Note")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("OrderID")
                         .HasColumnType("int");

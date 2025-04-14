@@ -16,6 +16,7 @@ namespace FoodFlowSystem.Helpers
 
         public string GenerateToken(IEnumerable<Claim> claims)
         {
+            var accessTokenExpiryInMinutes = int.Parse(_configuration["JwtSettings:AccessTokenExpiryInMinutes"] ?? "30");
             var secretKey = _configuration["JwtSettings:SecretKey"];
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -24,7 +25,7 @@ namespace FoodFlowSystem.Helpers
                 issuer: _configuration["JwtSettings:Issuer"],
                 //audience: _configuration["JwtSettings:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(15),
+                expires: DateTime.UtcNow.AddMinutes(accessTokenExpiryInMinutes),
                 signingCredentials: creds
             );
 

@@ -7,7 +7,8 @@ namespace FoodFlowSystem.Validators.Order
     {
         public CreateOrderValidator()
         {
-            RuleFor(x => x.Notes).MaximumLength(500);
+            RuleFor(x => x.Phone).NotEmpty().WithMessage("Phone is required");
+            RuleFor(x => x.Note).MaximumLength(500);
         }
     }
 }

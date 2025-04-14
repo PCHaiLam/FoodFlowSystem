@@ -7,7 +7,7 @@ namespace FoodFlowSystem.Validators.OrderItem
     {
         public CreateOrderItemValidator()
         {
-            RuleFor(x => x.ProductID).NotEmpty().WithMessage("ProductID is required");
+            RuleFor(x => x.ProductId).NotEmpty().WithMessage("ProductID is required");
             RuleFor(x => x.Quantity).NotEmpty().WithMessage("Quantity is required");
         }
     }

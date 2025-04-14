@@ -9,5 +9,6 @@ namespace FoodFlowSystem.Repositories
         Task<T> AddAsync(T entity);
         Task<T> UpdateAsync(T entity);
         Task<T> DeleteAsync(int id);
+        T UpdateWithoutSaving(T entity);
     }
 }

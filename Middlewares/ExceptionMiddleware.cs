@@ -59,7 +59,8 @@ namespace FoodFlowSystem.Middlewares
                 errors,
             };
 
-            logger.LogError(JsonSerializer.Serialize(errors));
+            logger.LogError(message);
+            logger.LogError(exception, "An error occurred while processing the request.");
 
             var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
             var jsonResponse = JsonSerializer.Serialize(response, options);

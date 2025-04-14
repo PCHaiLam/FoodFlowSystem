@@ -50,61 +50,74 @@ namespace FoodFlowSystem.Services.Auth
 
         public async Task LoginWithGoogleAsync(GoogleLoginRequest request)
         {
-            var payload = await GoogleJsonWebSignature.ValidateAsync(request.IdToken);
-            if (payload == null)
+            try
             {
-                _logger.LogError("Invalid google payload");
-                throw new ApiException("Invalid google payload", 400);
-            }
-            
-            var user = await _userRepository.IsExistUserEmailAsync(payload.Email);
-            if (user == null)
-            {
-                var newUser = new UserEntity
+                var payload = await GoogleJsonWebSignature.ValidateAsync(request.IdToken);
+                if (payload == null)
                 {
-                    FirstName = payload.GivenName,
-                    LastName = payload.FamilyName,
-                    Email = payload.Email,
-                    PhotoUrl = payload.Picture,
-                    RoleID = 2,
-                };
+                    _logger.LogError("Invalid google payload");
+                    throw new ApiException("Invalid google payload", 400);
+                }
 
-                await _authRepository.AddAsync(newUser);
-
-                var newOauth = new OAuthEntity
+                var user = await _userRepository.IsExistUserEmailAsync(payload.Email);
+                if (user == null)
                 {
-                    Provider = "GOOGLE",
-                    ProviderUserId = payload.Subject,
-                    UserId = newUser.ID,
-                    Email = payload.Email,
-                    LastLoginAt = DateTime.UtcNow,
-                };
+                    var newUser = new UserEntity
+                    {
+                        FirstName = payload.GivenName,
+                        LastName = payload.FamilyName,
+                        Email = payload.Email,
+                        PhotoUrl = payload.Picture,
+                        RoleID = 2,
+                    };
 
-                await _oauthRepository.AddAsync(newOauth);
-                _logger.LogInformation("Register user with google account success");
-            }
+                    await _authRepository.AddAsync(newUser);
 
-            user = await _userRepository.IsExistUserEmailAsync(payload.Email);
+                    var newOauth = new OAuthEntity
+                    {
+                        Provider = "GOOGLE",
+                        ProviderUserId = payload.Subject,
+                        UserId = newUser.ID,
+                        Email = payload.Email,
+                        LastLoginAt = DateTime.UtcNow,
+                    };
 
-            var claims = new[]
-            {
+                    await _oauthRepository.AddAsync(newOauth);
+                    _logger.LogInformation("Register user with google account success");
+                }
+
+                user = await _userRepository.IsExistUserEmailAsync(payload.Email);
+
+                var claims = new[]
+                {
                 new Claim("userId", user.ID.ToString()),
                 new Claim("firstName", user.FirstName),
                 new Claim("lastName", user.LastName ?? ""),
-                new Claim("phoneNumber", user.Phone ?? ""),
+                new Claim("phone", user.Phone ?? ""),
                 new Claim("photoUrl", user.PhotoUrl ?? ""),
                 new Claim("email", user.Email),
                 new Claim("roleId", user.RoleID.ToString()),
             };
 
-            var token = _jwtHelper.GenerateToken(claims);
-            var refreshToken = _jwtHelper.CreateRefreshToken();
+                var token = _jwtHelper.GenerateToken(claims);
+                var refreshToken = _jwtHelper.CreateRefreshToken();
 
-            var responseHeaders = _httpContextAccessor.HttpContext.Response.Headers;
-            responseHeaders.Append("auth_token", $"Bearer {token}");
-            responseHeaders.Append("refresh_token", refreshToken);
+                var responseHeaders = _httpContextAccessor.HttpContext.Response.Headers;
+                responseHeaders.Append("auth_token", $"Bearer {token}");
+                responseHeaders.Append("refresh_token", refreshToken);
 
-            _logger.LogInformation("Login with google success");
+                _logger.LogInformation("Login with google success");
+            }
+            catch (InvalidJwtException ex)
+            {
+                _logger.LogError(ex, "Token Google không hợp lệ");
+                throw new ApiException("Token Google không hợp lệ hoặc đã hết hạn", 401);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi xác thực với Google");
+                throw new ApiException("Không thể xác thực với Google. Vui lòng thử lại sau", 500);
+            }
         }   
         
         public async Task LoginAsync(LoginRequest request)
@@ -143,7 +156,7 @@ namespace FoodFlowSystem.Services.Auth
                 new Claim("firstName", user.FirstName),
                 new Claim("lastName", user.LastName),
                 new Claim("email", user.Email),
-                new Claim("phoneNumber", user.Phone),
+                new Claim("phone", user.Phone),
                 new Claim("roleId", user.RoleID.ToString()),
             };
 
