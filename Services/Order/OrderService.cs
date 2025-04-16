@@ -4,9 +4,11 @@ using FoodFlowSystem.Data.DbContexts;
 using FoodFlowSystem.DTOs.Requests.Order;
 using FoodFlowSystem.DTOs.Requests.OrderItem;
 using FoodFlowSystem.DTOs.Responses;
+using FoodFlowSystem.Entities.Invoice;
 using FoodFlowSystem.Entities.Order;
 using FoodFlowSystem.Entities.OrderItem;
 using FoodFlowSystem.Middlewares.Exceptions;
+using FoodFlowSystem.Repositories.Invoice;
 using FoodFlowSystem.Repositories.Order;
 using FoodFlowSystem.Repositories.OrderItem;
 using FoodFlowSystem.Repositories.Product;
@@ -19,6 +21,7 @@ namespace FoodFlowSystem.Services.Order
     {
         private readonly MssqlDbContext _dbContext;
         private readonly IUserRepository _userRepository;
+        private readonly IInvoiceRepository _invoiceRepository;
         private readonly IOrderRepository _orderRepository;
         private readonly IOrderItemRepository _orderItemRepository;
         private readonly IProductRepository _productRepository;
@@ -34,6 +37,7 @@ namespace FoodFlowSystem.Services.Order
             IHttpContextAccessor httpContextAccessor,
             MssqlDbContext dbContext,
             IUserRepository userRepository,
+            IInvoiceRepository invoiceRepository,
             IOrderRepository orderRepository,
             IOrderItemRepository orderItemRepository,
             IProductRepository productRepository,
@@ -48,6 +52,7 @@ namespace FoodFlowSystem.Services.Order
         {
             _dbContext = dbContext;
             _userRepository = userRepository;
+            _invoiceRepository = invoiceRepository;
             _orderRepository = orderRepository;
             _orderItemRepository = orderItemRepository;
             _productRepository = productRepository;
@@ -237,6 +242,13 @@ namespace FoodFlowSystem.Services.Order
             try
             {
                 var newOrder = await _orderRepository.AddAsync(order);
+                var newInvoice = new InvoiceEntity
+                {
+                    OrderID = newOrder.ID,
+                    TotalAmount = order.TotalAmount,
+                    Discount = 0,
+                };
+                await _invoiceRepository.AddAsync(newInvoice);
 
                 await _dbContext.SaveChangesAsync();
                 await transaction.CommitAsync();
