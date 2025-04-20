@@ -89,12 +89,7 @@ namespace FoodFlowSystem.Services.Order
                 orderType = "online";
             }
 
-            //check 4 use case
             //1. order in restaurant
-            //2. order online - has reservation (not order food)
-            //3. order online - has food order (not reservation)
-            //4. order online - has reservation and food order
-
             if (orderType == "in_restaurant")
             {
                 if (request.TableId == null || request.TableId == 0)
@@ -109,61 +104,33 @@ namespace FoodFlowSystem.Services.Order
                     throw new ApiException("Vui lòng chọn ít nhất một món ăn", 400);
                 }
             }
-
+            //2. order online
             else if (orderType == "online")
             {
                 bool hasReservationDate = request.ReservationDate != null;
                 bool hasReservationTime = request.ReservationTime != null;
-                bool hasTable = request.TableId != null && request.TableId != 0;
+                bool hasNumOfGuests = request.NumOfGuests > 0;
                 bool hasOrderItems = request.OrderItems != null && request.OrderItems.Count > 0;
 
-                // Trường hợp 1: Chỉ đặt bàn (không đặt món)
-                if (hasTable && !hasOrderItems)
+                if (!hasReservationTime)
                 {
-                    // Kiểm tra điều kiện bắt buộc của đặt bàn (cần có ngày và giờ)
-                    if (!hasReservationDate)
-                    {
-                        _logger.LogError("Thiếu ngày đặt bàn");
-                        throw new ApiException("Vui lòng chọn ngày đặt bàn", 400);
-                    }
-
-                    if (!hasReservationTime)
-                    {
-                        _logger.LogError("Thiếu giờ đặt bàn");
-                        throw new ApiException("Vui lòng chọn giờ đặt bàn", 400);
-                    }
+                    _logger.LogError("Thời gian đặt bàn không hợp lệ");
+                    throw new ApiException("Thời gian đặt bàn không hợp lệ", 400);
                 }
 
-                // Trường hợp 2: Chỉ đặt món (không đặt bàn)
-                else if (!hasTable && hasOrderItems)
+                if (!hasReservationDate)
                 {
-                    // Kiểm tra điều kiện bắt buộc của đặt món (chỉ cần thời gian)
-                    if (!hasReservationTime)
-                    {
-                        _logger.LogError("Thiếu thời gian đặt món");
-                        throw new ApiException("Vui lòng chọn thời gian đặt món", 400);
-                    }
+                    _logger.LogError("Ngày đặt bàn không hợp lệ");
+                    throw new ApiException("Ngày đặt bàn không hợp lệ", 400);
                 }
 
-                // Trường hợp 3: Đặt cả bàn và món
-                else if (hasTable && hasOrderItems)
+                if (!hasNumOfGuests)
                 {
-                    // Kiểm tra đầy đủ 4 điều kiện
-                    if (!hasReservationDate)
-                    {
-                        _logger.LogError("Thiếu ngày đặt bàn và món");
-                        throw new ApiException("Vui lòng chọn ngày đặt bàn và món", 400);
-                    }
-
-                    if (!hasReservationTime)
-                    {
-                        _logger.LogError("Thiếu giờ đặt bàn và món");
-                        throw new ApiException("Vui lòng chọn giờ đặt bàn và món", 400);
-                    }
+                    _logger.LogError("Số lượng khách không hợp lệ");
+                    throw new ApiException("Số lượng khách không hợp lệ", 400);
                 }
 
-                // Trường hợp 4: Không đặt gì cả
-                else if (!hasTable && !hasOrderItems)
+                if (!hasOrderItems)
                 {
                     _logger.LogError("Đơn hàng trống");
                     throw new ApiException("Vui lòng chọn món hoặc đặt bàn", 400);
@@ -246,7 +213,7 @@ namespace FoodFlowSystem.Services.Order
                 {
                     OrderID = newOrder.ID,
                     TotalAmount = order.TotalAmount,
-                    Discount = 0,
+                    Discount = request.Discount,
                 };
                 await _invoiceRepository.AddAsync(newInvoice);
 
