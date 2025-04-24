@@ -11,6 +11,7 @@ namespace FoodFlowSystem.DTOs.Requests.Order
         public TimeOnly? ReservationTime { get; set; }
         public DateTime? ReservationDate { get; set; }
         public string Note { get; set; }
+        public int Discount { get; set; }
         public ICollection<CreateOrderItemRequest> OrderItems { get; set; }
         public CreatePaymentRequest PaymentInfo { get; set; }
     }
