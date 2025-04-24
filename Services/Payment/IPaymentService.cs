@@ -1,12 +1,11 @@
 ﻿using FoodFlowSystem.DTOs.Requests.Payment;
-using FoodFlowSystem.DTOs.Responses;
+using FoodFlowSystem.DTOs.Responses.Payments;
 
 namespace FoodFlowSystem.Services.Payment
 {
     public interface IPaymentService
     {
         Task<PaymentResponse> CreatePaymentAsync(CreatePaymentRequest request);
-        //Task<ICollection<PaymentResponse>> GetPaymentByInvoiceIdAsync(int id);
-        Task<ICollection<PaymentResponse>> GetAllPaymentsAsync();
+        Task<PaymentResponse> ProcessVNPayCallbackAsync(VNPayResponse response);
     }
 }

@@ -3,17 +3,22 @@ using FluentValidation;
 using FoodFlowSystem.Data.DbContexts;
 using FoodFlowSystem.DTOs.Requests.Order;
 using FoodFlowSystem.DTOs.Requests.OrderItem;
+using FoodFlowSystem.DTOs.Requests.Payment;
 using FoodFlowSystem.DTOs.Responses;
+using FoodFlowSystem.DTOs.Responses.Payments;
 using FoodFlowSystem.Entities.Invoice;
 using FoodFlowSystem.Entities.Order;
 using FoodFlowSystem.Entities.OrderItem;
+using FoodFlowSystem.Entities.Payment;
 using FoodFlowSystem.Middlewares.Exceptions;
 using FoodFlowSystem.Repositories.Invoice;
 using FoodFlowSystem.Repositories.Order;
 using FoodFlowSystem.Repositories.OrderItem;
+using FoodFlowSystem.Repositories.Payment;
 using FoodFlowSystem.Repositories.Product;
 using FoodFlowSystem.Repositories.ProductVersion;
 using FoodFlowSystem.Repositories.User;
+using FoodFlowSystem.Services.Payment;
 
 namespace FoodFlowSystem.Services.Order
 {
@@ -26,6 +31,8 @@ namespace FoodFlowSystem.Services.Order
         private readonly IOrderItemRepository _orderItemRepository;
         private readonly IProductRepository _productRepository;
         private readonly IProductVersionRepository _productVersionRepository;
+        private readonly IPaymentRepository _paymentRepository;
+        private readonly IVNPayService _vnpayService;
         private readonly IMapper _mapper;
         private readonly ILogger<OrderService> _logger;
         private readonly IValidator<CreateOrderRequest> _createOrderValidator;
@@ -42,6 +49,8 @@ namespace FoodFlowSystem.Services.Order
             IOrderItemRepository orderItemRepository,
             IProductRepository productRepository,
             IProductVersionRepository productVersionRepository,
+            IPaymentRepository paymentRepository,
+            IVNPayService vNPayService,
             IMapper mapper,
             ILogger<OrderService> logger,
             IValidator<CreateOrderRequest> createOrderValidator,
@@ -57,6 +66,8 @@ namespace FoodFlowSystem.Services.Order
             _orderItemRepository = orderItemRepository;
             _productRepository = productRepository;
             _productVersionRepository = productVersionRepository;
+            _paymentRepository = paymentRepository;
+            _vnpayService = vNPayService;
             _mapper = mapper;
             _logger = logger;
             _createOrderValidator = createOrderValidator;
@@ -89,11 +100,9 @@ namespace FoodFlowSystem.Services.Order
                 orderType = "online";
             }
 
-            //check 4 use case
+            //2 case
             //1. order in restaurant
-            //2. order online - has reservation (not order food)
-            //3. order online - has food order (not reservation)
-            //4. order online - has reservation and food order
+            //2. order online
 
             if (orderType == "in_restaurant")
             {
@@ -109,7 +118,6 @@ namespace FoodFlowSystem.Services.Order
                     throw new ApiException("Vui lòng chọn ít nhất một món ăn", 400);
                 }
             }
-
             else if (orderType == "online")
             {
                 bool hasReservationDate = request.ReservationDate != null;
@@ -248,7 +256,12 @@ namespace FoodFlowSystem.Services.Order
                     TotalAmount = order.TotalAmount,
                     Discount = 0,
                 };
-                await _invoiceRepository.AddAsync(newInvoice);
+                var invoice = await _invoiceRepository.AddAsync(newInvoice);
+
+                // add payment to db
+                var newPayment = _mapper.Map<PaymentEntity>(request.PaymentInfo);
+                newPayment.InvoiceId = invoice.ID;
+                var payment = await _paymentRepository.AddWithoutSavingAsync(newPayment);
 
                 await _dbContext.SaveChangesAsync();
                 await transaction.CommitAsync();
@@ -259,13 +272,39 @@ namespace FoodFlowSystem.Services.Order
                 var result = _mapper.Map<OrderResponse>(newOrder);
                 result.OrderItems = _mapper.Map<ICollection<OrderItemResponse>>(listOI);
 
+                //if is roleId = 2 (customer) and orderType = online then create payment with methods include(vnpay, paypal, momo)
+                var paymentUrl = string.Empty;
+                if (userRole == 2 && orderType == "online")
+                {
+                    paymentUrl = GetPaymentUrl(request.PaymentInfo.PaymentMethod, newOrder.ID, order.TotalAmount / 2);
+                }
+                result.PaymentUrl = paymentUrl;
+
                 return result;
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
                 _logger.LogError(ex, "Error during order creation");
-                throw new ApiException("Lỗi hệ thống", 500);
+                throw new ApiException("Lỗi trong quá trình đặt hàng và thanh toán.", 500);
+            }
+        }
+
+        private string GetPaymentUrl(string paymentMethod, int orderId, decimal totalAmount)
+        {
+            if (paymentMethod.ToLower() == "vnpay")
+            {
+                var vnPayRequest = new VNPayRequest
+                {
+                    OrderId = orderId,
+                    Amount = totalAmount,
+                    OrderInfo = $"Thanh toán đơn hàng {orderId}",
+                };
+                return _vnpayService.CreatePaymentUrl(vnPayRequest, base.GetIpAddress());
+            }
+            else
+            {
+                throw new ApiException($"Unsupported payment method: {paymentMethod}", 400);
             }
         }
 

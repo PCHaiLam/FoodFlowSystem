@@ -1,5 +1,6 @@
 ﻿using FoodFlowSystem.Data.DbContexts;
 using FoodFlowSystem.Entities;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace FoodFlowSystem.Repositories
@@ -55,6 +56,12 @@ namespace FoodFlowSystem.Repositories
         public T UpdateWithoutSaving(T entity)
         {
             _dbSet.Update(entity);
+            return entity;
+        }
+
+        public async Task<T> AddWithoutSavingAsync(T entity)
+        {
+            await _dbSet.AddAsync(entity);
             return entity;
         }
     }

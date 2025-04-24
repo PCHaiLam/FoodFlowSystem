@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using FluentValidation;
 using FoodFlowSystem.DTOs.Requests.Payment;
-using FoodFlowSystem.DTOs.Responses;
+using FoodFlowSystem.DTOs.Responses.Payments;
 using FoodFlowSystem.Entities.Payment;
 using FoodFlowSystem.Middlewares.Exceptions;
 using FoodFlowSystem.Repositories.Invoice;
@@ -35,13 +35,6 @@ namespace FoodFlowSystem.Services.Payment
 
         public async Task<PaymentResponse> CreatePaymentAsync(CreatePaymentRequest request)
         {
-            var invoice = await _invoiceRepository.GetByIdAsync(request.InvoiceId);
-            if (invoice == null)
-            {
-                _logger.LogError("Invoice not found");
-                throw new ApiException("Invoice not found", 404);
-            }
-
             var validationResult = await _createValidator.ValidateAsync(request);
             if (!validationResult.IsValid)
             {
@@ -67,6 +60,34 @@ namespace FoodFlowSystem.Services.Payment
         {
             var payments = await _paymentRepository.GetAllAsync();
             var result = _mapper.Map<ICollection<PaymentResponse>>(payments);
+
+            return result;
+        }
+
+        public async Task<PaymentResponse> ProcessVNPayCallbackAsync(VNPayResponse response)
+        {
+            if (response.ResponseCode != "00")
+            {
+                _logger.LogError($"Payment failed: {response.Message}");
+                throw new ApiException("Giao dịch thất bại.", 400);
+            }
+
+            var payment = await _paymentRepository.GetPendingDepositPaymentsByOrderId(response.OrderId);
+            if (payment == null)
+            {
+                throw new ApiException("Lỗi khi thanh toán", 400);
+            }
+
+            payment.Status = "Completed";
+            //payment.TransactionId = response.TransactionId;
+            payment.Amount = response.Amount;
+
+            await _paymentRepository.UpdateAsync(payment);
+
+            var result = _mapper.Map<PaymentResponse>(payment);
+            result.OrderId = response.OrderId;
+            result.IsDeposit = true;
+            result.Message = response.Message;
 
             return result;
         }

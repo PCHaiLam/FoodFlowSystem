@@ -7,6 +7,7 @@
         public string Note { get; set; }
         public decimal TotalAmount { get; set; }
         public string Status { get; set; }
+        public string PaymentUrl { get; set; }
         public DateTime CreatedAt { get; set; }
         public ICollection<OrderItemResponse> OrderItems { get; set; }
     }

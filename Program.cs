@@ -1,5 +1,6 @@
 using FluentValidation;
 using FoodFlowSystem.Data.DbContexts;
+using FoodFlowSystem.DTOs.Requests.Payment.PaymentConfigs;
 using FoodFlowSystem.Entities;
 using FoodFlowSystem.Helpers;
 using FoodFlowSystem.Interceptors;
@@ -71,8 +72,9 @@ builder.Services.AddCors(options =>
 // HttpContextAccessor
 builder.Services.AddHttpContextAccessor();
 
-// JWT Config
+// Config
 builder.Services.Configure<JwtSettingClass>(builder.Configuration.GetSection("JwtSettings"));
+builder.Services.Configure<VNPayConfig>(builder.Configuration.GetSection("PaymentGateways:VNPayConfig"));
 
 //Interceptors
 builder.Services.AddSingleton<AuditLogInterceptor>();
@@ -142,8 +144,9 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ITableService, TableService>();
 builder.Services.AddScoped<IFeedbackService, FeedbackService>();
-builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IVNPayService, VNPayService>();
 
 // JWT 
 builder.Services.AddScoped<JwtHelper>();
