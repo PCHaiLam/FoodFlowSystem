@@ -12,6 +12,26 @@ namespace FoodFlowSystem.Services
             _httpContextAccessor = httpContextAccessor;
         }
 
+        protected string GetIpAddress()
+        {
+            string ipAddress;
+            try
+            {
+                ipAddress = _httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString();
+
+                if (string.IsNullOrEmpty(ipAddress) || ipAddress == "::1")
+                {
+                    ipAddress = "127.0.0.1";
+                }
+            }
+            catch (Exception)
+            {
+                ipAddress = "127.0.0.1";
+            }
+
+            return ipAddress;
+        }
+
         protected int GetCurrentUserId()
         {
             var userIdClaim = _httpContextAccessor.HttpContext?.User?.Claims?.FirstOrDefault(c => c.Type == "userId");

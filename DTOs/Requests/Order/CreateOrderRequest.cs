@@ -1,4 +1,5 @@
 ﻿using FoodFlowSystem.DTOs.Requests.OrderItem;
+using FoodFlowSystem.DTOs.Requests.Payment;
 
 namespace FoodFlowSystem.DTOs.Requests.Order
 {
@@ -12,5 +13,6 @@ namespace FoodFlowSystem.DTOs.Requests.Order
         public string Note { get; set; }
         public int Discount { get; set; }
         public ICollection<CreateOrderItemRequest> OrderItems { get; set; }
+        public CreatePaymentRequest PaymentInfo { get; set; }
     }
 }

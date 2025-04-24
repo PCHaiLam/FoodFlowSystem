@@ -7,10 +7,9 @@ namespace FoodFlowSystem.Validators.Payment
     {
         public CreatePaymentValidator()
         {
-            RuleFor(x => x.InvoiceId).NotEmpty().WithMessage("Invoice id is required");
+            //RuleFor(x => x.InvoiceId).NotEmpty().WithMessage("Invoice id is required");
             RuleFor(x => x.PaymentType).NotEmpty().WithMessage("PaymentType is required");
             RuleFor(x => x.PaymentMethod).NotEmpty().WithMessage("PaymentMethod is required");
-            RuleFor(x => x.Amount).NotEmpty().WithMessage("Amount is required");
         }
     }
 }

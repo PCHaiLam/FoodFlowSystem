@@ -1,4 +1,5 @@
-﻿using FoodFlowSystem.Entities.Payment;
+﻿using FoodFlowSystem.DTOs.Responses.Payments;
+using FoodFlowSystem.Entities.Payment;
 
 namespace FoodFlowSystem.DTOs.Responses
 {

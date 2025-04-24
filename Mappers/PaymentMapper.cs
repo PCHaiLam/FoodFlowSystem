@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using FoodFlowSystem.DTOs.Requests.Payment;
-using FoodFlowSystem.DTOs.Responses;
+using FoodFlowSystem.DTOs.Responses.Payments;
 using FoodFlowSystem.Entities.Payment;
 
 namespace FoodFlowSystem.Mappers
