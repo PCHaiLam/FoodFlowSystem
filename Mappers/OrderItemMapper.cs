@@ -17,7 +17,9 @@ namespace FoodFlowSystem.Mappers
             CreateMap<CreateOrderItemRequest, UpdateOrderItemRequest>();
 
             // entity -> response
-            CreateMap<OrderItemEntity, OrderItemResponse>();
+            CreateMap<OrderItemEntity, OrderItemResponse>()
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Product.Name));
+
         }
     }
 }

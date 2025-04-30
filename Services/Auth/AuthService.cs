@@ -55,7 +55,6 @@ namespace FoodFlowSystem.Services.Auth
                 var payload = await GoogleJsonWebSignature.ValidateAsync(request.IdToken);
                 if (payload == null)
                 {
-                    _logger.LogError("Invalid google payload");
                     throw new ApiException("Invalid google payload", 400);
                 }
 
@@ -110,12 +109,10 @@ namespace FoodFlowSystem.Services.Auth
             }
             catch (InvalidJwtException ex)
             {
-                _logger.LogError(ex, "Token Google không hợp lệ");
                 throw new ApiException("Token Google không hợp lệ hoặc đã hết hạn", 401);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Lỗi xác thực với Google");
                 throw new ApiException("Không thể xác thực với Google. Vui lòng thử lại sau", 500);
             }
         }   
@@ -125,7 +122,6 @@ namespace FoodFlowSystem.Services.Auth
             var validationResult = await _loginValidator.ValidateAsync(request);
             if (!validationResult.IsValid)
             {
-                _logger.LogError("Validation error: {0}", validationResult.Errors);
                 var errors = validationResult.Errors.Select(e => new
                 {
                     Field = e.PropertyName,
@@ -137,7 +133,6 @@ namespace FoodFlowSystem.Services.Auth
             var user = await _authRepository.GetUserByEmailAsync(request.Email);
             if (user == null)
             {
-                _logger.LogError("User doesn't exist");
                 throw new ApiException("User doesn't exist", 400);
             } 
             else
@@ -145,7 +140,6 @@ namespace FoodFlowSystem.Services.Auth
                 var passWordHashed = HashPassword.Hash(request.Password);
                 if (user.HashPassword != passWordHashed)
                 {
-                    _logger.LogError("Invalid password");
                     throw new ApiException("Invalid password", 400);
                 }
             }
@@ -175,7 +169,6 @@ namespace FoodFlowSystem.Services.Auth
             var validationResult = _registerValidator.Validate(request);
             if (!validationResult.IsValid)
             {
-                _logger.LogError("Validation error: {0}", validationResult.Errors);
                 var errors = validationResult.Errors.Select(e => new
                 {
                     Field = e.PropertyName,
@@ -187,7 +180,6 @@ namespace FoodFlowSystem.Services.Auth
             var emailExist = await _userRepository.IsExistUserEmailAsync(request.Email);
             if (emailExist != null)
             {
-                _logger.LogError("Email already exists");
                 throw new ApiException("Email already exists", 400);
             }
 

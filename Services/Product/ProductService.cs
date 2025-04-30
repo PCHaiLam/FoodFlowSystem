@@ -41,7 +41,6 @@ namespace FoodFlowSystem.Services.Product
             var validationResult = await _createProductValidator.ValidateAsync(request);
             if (!validationResult.IsValid)
             {
-                _logger.LogError("Validation failed");
                 var errors = validationResult.Errors.Select(e => new
                 {
                     Field = e.PropertyName,
@@ -53,7 +52,6 @@ namespace FoodFlowSystem.Services.Product
             var checkProduct = _productRepository.IsExistProductNameAsync(request.Name);
             if (checkProduct != null)
             {
-                _logger.LogError("Product already exists");
                 throw new ApiException("Product already exists", 400);
             }
 
@@ -83,7 +81,6 @@ namespace FoodFlowSystem.Services.Product
             var checkProduct = await _productRepository.GetProductById(id);
             if (checkProduct == null)
             {
-                _logger.LogError("Product not found");
                 throw new ApiException("Product not found", 404);
             }
 
@@ -188,7 +185,6 @@ namespace FoodFlowSystem.Services.Product
             var validationResult = await _updateProductValidator.ValidateAsync(request);
             if (!validationResult.IsValid)
             {
-                _logger.LogError("Invalid Input");
                 var errors = validationResult.Errors.Select(e => new
                 {
                     Field = e.PropertyName,
@@ -200,7 +196,6 @@ namespace FoodFlowSystem.Services.Product
             var product = await _productRepository.GetProductById(request.ID);
             if (product == null)
             {
-                _logger.LogError("Product not found");
                 throw new ApiException("Product not found", 404);
             }
 
@@ -237,7 +232,6 @@ namespace FoodFlowSystem.Services.Product
             var product = await _productRepository.GetProductById(id);
             if (product == null)
             {
-                _logger.LogError("Product not found");
                 throw new ApiException("Product not found", 404);
             }
 

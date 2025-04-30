@@ -42,7 +42,6 @@ namespace FoodFlowSystem.Services.User
 
             if (checkUser == null)
             {
-                _logger.LogError("User not found");
                 throw new ApiException("User not found", 404);
             }
 
@@ -56,7 +55,6 @@ namespace FoodFlowSystem.Services.User
             var user = await _userRepository.GetByIdAsync(id);
             if (user == null)
             {
-                _logger.LogError("User not found");
                 throw new ApiException("User not found", 404);
             }
 
@@ -71,7 +69,6 @@ namespace FoodFlowSystem.Services.User
             var user = await _userRepository.GetByNameAsync(name);
             if (user == null)
             {
-                _logger.LogError("User not found");
                 throw new ApiException("User not found", 404);
             }
 
@@ -95,7 +92,6 @@ namespace FoodFlowSystem.Services.User
             var validationResult = await _updateUserValidator.ValidateAsync(request);
             if (!validationResult.IsValid)
             {
-                _logger.LogError("Invalid Input");
                 var errors = validationResult.Errors.Select(e => new
                 {
                     Field = e.PropertyName,
@@ -109,7 +105,6 @@ namespace FoodFlowSystem.Services.User
             var user = await _userRepository.GetByIdAsync(userId);
             if (user == null)
             {
-                _logger.LogError("User not found");
                 throw new ApiException("User not found", 404);
             }
 

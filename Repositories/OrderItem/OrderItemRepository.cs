@@ -12,7 +12,11 @@ namespace FoodFlowSystem.Repositories.OrderItem
 
         public async Task<ICollection<OrderItemEntity>> GetByOrderId(int id)
         {
-            return await _dbContext.OrderItems.Where(x => x.OrderID == id).ToListAsync();
+            var result = await _dbContext.OrderItems
+               .Include(x => x.Product)
+               .Where(x => x.OrderID == id)
+               .ToListAsync();
+            return result;
         }
 
         public async Task<OrderItemEntity> GetByOrderIdAndProductId(int orderId, int productId)

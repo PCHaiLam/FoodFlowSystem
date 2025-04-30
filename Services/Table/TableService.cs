@@ -37,7 +37,6 @@ namespace FoodFlowSystem.Services.Table
             var validationResult = await _createTableRequestValidator.ValidateAsync(request);
             if (!validationResult.IsValid)
             {
-                _logger.LogError("Validation failed");
                 var errors = validationResult.Errors.Select(e => new
                 {
                     Field = e.PropertyName,
@@ -63,7 +62,6 @@ namespace FoodFlowSystem.Services.Table
             var tableEntity = await _tableRepository.GetByIdAsync(id);
             if (tableEntity == null)
             {
-                _logger.LogError($"Table with id {id} not found");
                 throw new ApiException($"Table with id {id} not found", 404);
                 
             }
@@ -84,7 +82,6 @@ namespace FoodFlowSystem.Services.Table
             var validationResult = await _updateTableRequestValidator.ValidateAsync(request);
             if (!validationResult.IsValid)
             {
-                _logger.LogError("Validation failed");
                 var errors = validationResult.Errors.Select(e => new
                 {
                     Field = e.PropertyName,
