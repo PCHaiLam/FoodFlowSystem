@@ -37,7 +37,6 @@ namespace FoodFlowSystem.Services.Category
 
             if (!validationResult.IsValid)
             {
-                _logger.LogError("Validation error");
                 var errors = validationResult.Errors.Select(e => new
                 {
                     Field = e.PropertyName,
@@ -62,7 +61,6 @@ namespace FoodFlowSystem.Services.Category
 
             if (checkCategory == null)
             {
-                _logger.LogError("Category not found");
                 throw new ApiException("Category not found", 404);
             }
 
@@ -88,7 +86,6 @@ namespace FoodFlowSystem.Services.Category
 
             if (category == null)
             {
-                _logger.LogError("Category not found");
                 throw new ApiException("Category not found", 404);
             }
 
@@ -105,7 +102,6 @@ namespace FoodFlowSystem.Services.Category
 
             if (!validationResult.IsValid)
             {
-                _logger.LogError("Validation error");
                 var errors = validationResult.Errors.Select(e => new
                 {
                     Field = e.PropertyName,
@@ -118,7 +114,6 @@ namespace FoodFlowSystem.Services.Category
 
             if (category == null)
             {
-                _logger.LogError("Category not found");
                 throw new ApiException("Category not found", 404);
             }
 

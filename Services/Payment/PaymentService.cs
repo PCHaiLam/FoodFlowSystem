@@ -38,7 +38,6 @@ namespace FoodFlowSystem.Services.Payment
             var validationResult = await _createValidator.ValidateAsync(request);
             if (!validationResult.IsValid)
             {
-                _logger.LogError("Validation failed");
                 var errors = validationResult.Errors.Select(e => new
                 {
                     Field = e.PropertyName,
@@ -68,7 +67,6 @@ namespace FoodFlowSystem.Services.Payment
         {
             if (response.ResponseCode != "00")
             {
-                _logger.LogError($"Payment failed: {response.Message}");
                 throw new ApiException("Giao dịch thất bại.", 400);
             }
 

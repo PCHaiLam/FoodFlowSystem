@@ -82,7 +82,6 @@ namespace FoodFlowSystem.Services.Order
 
             if (!validationResult.IsValid)
             {
-                _logger.LogError("Validation create order request failed");
                 var errors = validationResult.Errors.Select(e => new
                 {
                     Field = e.PropertyName,
@@ -106,13 +105,11 @@ namespace FoodFlowSystem.Services.Order
             {
                 if (request.TableId == null || request.TableId == 0)
                 {
-                    _logger.LogError("Bàn không hợp lệ");
                     throw new ApiException("Bàn không hợp lệ", 400);
                 }
 
                 if (request.OrderItems.Count == 0)
                 {
-                    _logger.LogError("Vui lòng chọn ít nhất một món ăn");
                     throw new ApiException("Vui lòng chọn ít nhất một món ăn", 400);
                 }
             }
@@ -126,25 +123,21 @@ namespace FoodFlowSystem.Services.Order
 
                 if (!hasReservationTime)
                 {
-                    _logger.LogError("Thời gian đặt bàn không hợp lệ");
                     throw new ApiException("Thời gian đặt bàn không hợp lệ", 400);
                 }
 
                 if (!hasReservationDate)
                 {
-                    _logger.LogError("Ngày đặt bàn không hợp lệ");
                     throw new ApiException("Ngày đặt bàn không hợp lệ", 400);
                 }
 
                 if (!hasNumOfGuests)
                 {
-                    _logger.LogError("Số lượng khách không hợp lệ");
                     throw new ApiException("Số lượng khách không hợp lệ", 400);
                 }
 
                 if (!hasOrderItems)
                 {
-                    _logger.LogError("Đơn hàng trống");
                     throw new ApiException("Vui lòng chọn món hoặc đặt bàn", 400);
                 }
             }
@@ -171,7 +164,6 @@ namespace FoodFlowSystem.Services.Order
                     var validatorOrderItem = await _createOrderItemValidator.ValidateAsync(item);
                     if (!validatorOrderItem.IsValid)
                     {
-                        _logger.LogError("Validation create order item request failed");
                         var errors = validationResult.Errors.Select(e => new
                         {
                             Field = e.PropertyName,
@@ -185,19 +177,16 @@ namespace FoodFlowSystem.Services.Order
 
                     if (lastVersion == null)
                     {
-                        _logger.LogError("Product is inactive");
                         throw new ApiException("Sản phẩm không khả dụng.", 400);
                     }
 
                     if (product == null)
                     {
-                        _logger.LogError("Product not found");
                         throw new ApiException("Không tim thấy sản phẩm.", 404);
                     }
 
                     if (product.Quantity < item.Quantity)
                     {
-                        _logger.LogError("Product out of stock");
                         throw new ApiException($"Không đủ sản phẩm {product.Name}.Số lượng hiện tại: {product.Quantity}", 400);
                     }
 
@@ -256,7 +245,6 @@ namespace FoodFlowSystem.Services.Order
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                _logger.LogError(ex, "Error during order creation");
                 throw new ApiException("Lỗi trong quá trình đặt hàng và thanh toán.", 500);
             }
         }
@@ -304,7 +292,6 @@ namespace FoodFlowSystem.Services.Order
 
             if (checkOrder == null)
             {
-                _logger.LogError("Order not found");
                 throw new ApiException("Order not found", 404);
             }
 
@@ -319,7 +306,6 @@ namespace FoodFlowSystem.Services.Order
 
             if (orders == null)
             {
-                _logger.LogError("Order not found");
                 throw new ApiException("Order not found", 404);
             }
 
@@ -334,10 +320,9 @@ namespace FoodFlowSystem.Services.Order
         {
             var order = await _orderRepository.GetByIdAsync(id);
 
-            if (order == null)
+            if (order == null || (order.UserID != this.GetCurrentUserId()))
             {
-                _logger.LogError("Order not found");
-                throw new ApiException("Order not found", 404);
+                throw new ApiException("Không tìm thấy đơn hàng", 404);
             }
 
             var listOI = await _orderItemRepository.GetByOrderId(order.ID);
@@ -356,7 +341,6 @@ namespace FoodFlowSystem.Services.Order
 
             if (orders == null)
             {
-                _logger.LogError("Order not found");
                 throw new ApiException("Order not found", 404);
             }
 
@@ -373,7 +357,6 @@ namespace FoodFlowSystem.Services.Order
 
             if (orders == null)
             {
-                _logger.LogError("Order not found");
                 throw new ApiException("Order not found", 404);
             }
 
@@ -390,7 +373,6 @@ namespace FoodFlowSystem.Services.Order
 
             if (!validationResult.IsValid)
             {
-                _logger.LogError("Validation update order request failed");
                 var errors = validationResult.Errors.Select(e => new
                 {
                     Field = e.PropertyName,
@@ -403,7 +385,6 @@ namespace FoodFlowSystem.Services.Order
 
             if (order == null)
             {
-                _logger.LogError("Order not found");
                 throw new ApiException("Order not found", 404);
             }
 
@@ -412,7 +393,6 @@ namespace FoodFlowSystem.Services.Order
                 var validatorOrderItem = await _updateOrderItemValidator.ValidateAsync(item);
                 if (!validatorOrderItem.IsValid)
                 {
-                    _logger.LogError("Validation update order item request failed");
                     throw new ApiException("Invalid update order item input.");
                 }
 
@@ -436,7 +416,6 @@ namespace FoodFlowSystem.Services.Order
 
                     if (product.Quantity < item.Quantity)
                     {
-                        _logger.LogError("Product out of stock");
                         throw new ApiException($"Product out of stock. Remaining products: {item.Quantity}", 400);
                     }
 
@@ -454,7 +433,6 @@ namespace FoodFlowSystem.Services.Order
                     {
                         if (product.Quantity < quantityDiff)
                         {
-                            _logger.LogError("Product out of stock");
                             throw new ApiException($"Product out of stock. Remaining products: {item.Quantity}", 400);
                         }
 

@@ -23,7 +23,6 @@ namespace FoodFlowSystem.Services.Invoice
             var invoice = await _invoiceRepository.GetByIdAsync(id);
             if (invoice == null)
             {
-                _logger.LogError($"Invoice not exist.");
                 throw new ApiException("Invoice not exist", 404);
             }
 

@@ -35,7 +35,6 @@ namespace FoodFlowSystem.Services.Feedback
             var validationResult = await _createFeedbackValidator.ValidateAsync(request);
             if (!validationResult.IsValid)
             {
-                _logger.LogError("Validation failed");
                 var errors = validationResult.Errors.Select(e => new
                 {
                     Field = e.PropertyName,
@@ -61,7 +60,6 @@ namespace FoodFlowSystem.Services.Feedback
 
             if (checkFeedback == null)
             {
-                _logger.LogError("Feedback not found");
                 throw new ApiException("Feedback not found", 404);
             }
 
@@ -75,7 +73,6 @@ namespace FoodFlowSystem.Services.Feedback
             var feedback = await _feedbackRepository.GetByIdAsync(id);
             if (feedback == null)
             {
-                _logger.LogError("Feedback not found");
                 throw new ApiException("Feedback not found", 404);
             }
 
@@ -119,14 +116,12 @@ namespace FoodFlowSystem.Services.Feedback
             var currentUserId = this.GetCurrentUserId();
             if (currentUserId != request.UserId)
             {
-                _logger.LogError("Unauthorized this feedback");
                 throw new ApiException("Unauthorized this feedback", 401);
             }
 
             var validationResult = await _updateFeedbackValidator.ValidateAsync(request);
             if (!validationResult.IsValid)
             {
-                _logger.LogError("Invalid Input");
                 var errors = validationResult.Errors.Select(e => new
                 {
                     Field = e.PropertyName,
@@ -138,7 +133,6 @@ namespace FoodFlowSystem.Services.Feedback
             var feedback = await _feedbackRepository.GetByIdAsync(request.Id);
             if (feedback == null)
             {
-                _logger.LogError("Feedback not found");
                 throw new ApiException("Feedback not found", 404);
             }
 
