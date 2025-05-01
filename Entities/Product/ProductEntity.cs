@@ -2,6 +2,7 @@
 using FoodFlowSystem.Entities.Feedback;
 using FoodFlowSystem.Entities.OrderItem;
 using FoodFlowSystem.Entities.ProductVersions;
+using FoodFlowSystem.Entities.UserRecommendations;
 
 namespace FoodFlowSystem.Entities.Product
 {
@@ -16,5 +17,6 @@ namespace FoodFlowSystem.Entities.Product
         public ICollection<OrderItemEntity> OrderItems { get; set; }
         public ICollection<FeedbackEntity> Feedbacks { get; set; }
         public ICollection<ProductVersionEntity> ProductVersions { get; set; }
+        public ICollection<UserRecommendationsEntity> UserRecommendations { get; set; }
     }
 }
