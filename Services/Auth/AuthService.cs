@@ -147,10 +147,9 @@ namespace FoodFlowSystem.Services.Auth
             var claims = new[]
             {
                 new Claim("userId", user.ID.ToString()),
-                new Claim("firstName", user.FirstName),
-                new Claim("lastName", user.LastName),
-                new Claim("email", user.Email),
-                new Claim("phone", user.Phone),
+                new Claim("firstName", user.FirstName ?? string.Empty),
+                new Claim("lastName", user.LastName ?? string.Empty),
+                new Claim("email", user.Email ?? string.Empty),
                 new Claim("roleId", user.RoleID.ToString()),
             };
 
