@@ -6,7 +6,7 @@ namespace FoodFlowSystem.Contexts
     {
         public static void SetPaginationInfo(this HttpContext context,
                                         int totalRecords, int currentPage,
-                                        int pageSize)
+                                        int pageSize, int currentPageSize)
         {
             int totalPages = (int)Math.Ceiling((double)totalRecords / pageSize);
 
@@ -16,7 +16,8 @@ namespace FoodFlowSystem.Contexts
                 CurrentPage = currentPage,
                 TotalPages = totalPages,
                 NextPage = currentPage < totalPages ? currentPage + 1 : null,
-                PrevPage = currentPage > 1 ? currentPage - 1 : null
+                PrevPage = currentPage > 1 ? currentPage - 1 : null,
+                CurrentPageSize = currentPageSize
             };
 
             context.Items["PaginationInfo"] = paginationInfo;

@@ -40,7 +40,7 @@ namespace FoodFlowSystem.Controllers
 
             if (filter == "all")
             {
-                this.HttpContext.SetPaginationInfo(count, page, size);
+                this.HttpContext.SetPaginationInfo(count, page, size, 10);
             }
 
             var result = await _productService.GetAllActiveAsync(page, size, filter, search, category, minPrice, maxPrice, rating, sort);

@@ -9,6 +9,7 @@
         public string Status { get; set; }
         public string PaymentUrl { get; set; }
         public DateTime CreatedAt { get; set; }
+        public UserResponse User { get; set; }
         public ICollection<OrderItemResponse> OrderItems { get; set; }
     }
 }

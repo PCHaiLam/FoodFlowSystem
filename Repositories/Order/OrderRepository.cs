@@ -10,6 +10,25 @@ namespace FoodFlowSystem.Repositories.Order
         {
         }
 
+        public async Task<IEnumerable<OrderEntity>> GetAllOrdersAsync(int page, int size, string search = null)
+        {
+            var query = _dbContext.Orders.AsQueryable();
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                query = query.Where(x => x.User.LastName.Contains(search) || x.User.Email.Contains(search));
+            }
+
+            var data = await query
+                .Include(x => x.User)
+                .OrderByDescending(x => x.CreatedAt)
+                .Skip((page - 1) * size)
+                .Take(size)
+                .ToListAsync();
+
+            return data;
+        }
+
         public async Task<IEnumerable<OrderEntity>> GetByDateAsync(DateTime date)
         {
             var data = await _dbContext.Orders.Where(x => x.CreatedAt == date).ToListAsync();
@@ -25,6 +44,16 @@ namespace FoodFlowSystem.Repositories.Order
         public async Task<IEnumerable<OrderEntity>> GetByUserIdAsync(int id)
         {
             var data = await _dbContext.Orders.Where(x => x.UserID == id).ToListAsync();
+            return data;
+        }
+
+        public async Task<IEnumerable<OrderEntity>> GetPendingOrdersAsync()
+        {
+            var data = await _dbContext.Orders
+                .Include(x => x.User)
+                .Where(x => x.Status == "Pending")
+                .OrderByDescending(x => x.CreatedAt)
+                .ToListAsync();
             return data;
         }
 

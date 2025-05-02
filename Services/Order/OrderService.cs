@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using FluentValidation;
+using FoodFlowSystem.Contexts;
 using FoodFlowSystem.Data.DbContexts;
 using FoodFlowSystem.DTOs.Requests.Order;
 using FoodFlowSystem.DTOs.Requests.OrderItem;
@@ -460,6 +461,31 @@ namespace FoodFlowSystem.Services.Order
             var listOI = await _orderItemRepository.GetByOrderId(order.ID);
             var result = _mapper.Map<OrderResponse>(newOrder);
             result.OrderItems = _mapper.Map<ICollection<OrderItemResponse>>(listOI);
+
+            return result;
+        }
+
+        public async Task<ICollection<OrderResponse>> GetPendingOrdersAsync()
+        {
+            var orders = await _orderRepository.GetPendingOrdersAsync();
+
+            var result = _mapper.Map<ICollection<OrderResponse>>(orders);
+
+            _logger.LogInformation("Order listed successfully");
+
+            return result;
+        }
+
+        public async Task<ICollection<OrderResponse>> GetAllOrdersAsync(int page, int pageSize)
+        {
+            var orders = await _orderRepository.GetAllOrdersAsync(page, pageSize);
+
+            var totalRecords = await _orderRepository.CountAllAsync();
+            _httpContextAccessor.HttpContext.SetPaginationInfo(totalRecords, page, pageSize, orders.Count());
+
+            var result = _mapper.Map<ICollection<OrderResponse>>(orders);
+
+            _logger.LogInformation("Order listed successfully");
 
             return result;
         }
