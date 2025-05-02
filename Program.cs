@@ -1,7 +1,7 @@
 using FluentValidation;
 using FoodFlowSystem.Data.DbContexts;
+using FoodFlowSystem.DTOs;
 using FoodFlowSystem.DTOs.Requests.Payment.PaymentConfigs;
-using FoodFlowSystem.Entities;
 using FoodFlowSystem.Helpers;
 using FoodFlowSystem.Interceptors;
 using FoodFlowSystem.Mappers;
@@ -9,6 +9,7 @@ using FoodFlowSystem.Middlewares;
 using FoodFlowSystem.Repositories;
 using FoodFlowSystem.Repositories.Auth;
 using FoodFlowSystem.Repositories.Category;
+using FoodFlowSystem.Repositories.EmailTemplates;
 using FoodFlowSystem.Repositories.Feedback;
 using FoodFlowSystem.Repositories.Invoice;
 using FoodFlowSystem.Repositories.OAuth;
@@ -26,6 +27,7 @@ using FoodFlowSystem.Services.Invoice;
 using FoodFlowSystem.Services.Order;
 using FoodFlowSystem.Services.Payment;
 using FoodFlowSystem.Services.Product;
+using FoodFlowSystem.Services.SendMail;
 using FoodFlowSystem.Services.Table;
 using FoodFlowSystem.Services.User;
 using FoodFlowSystem.Validators.Auth;
@@ -73,7 +75,8 @@ builder.Services.AddCors(options =>
 builder.Services.AddHttpContextAccessor();
 
 // Config
-builder.Services.Configure<JwtSettingClass>(builder.Configuration.GetSection("JwtSettings"));
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
+builder.Services.Configure<SendMailConfig>(builder.Configuration.GetSection("SendMailConfig"));
 builder.Services.Configure<VNPayConfig>(builder.Configuration.GetSection("PaymentGateways:VNPayConfig"));
 
 //Interceptors
@@ -135,6 +138,7 @@ builder.Services.AddScoped<ITableRepository, TableRepository>();
 builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
+builder.Services.AddScoped<IEmailTemplatesRepository, EmailTemplatesRepository>();
 
 // Dependency Injection - Services
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -147,6 +151,7 @@ builder.Services.AddScoped<IFeedbackService, FeedbackService>();
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IVNPayService, VNPayService>();
+builder.Services.AddScoped<ISendMailService, SendMailService>();
 
 // JWT 
 builder.Services.AddScoped<JwtHelper>();

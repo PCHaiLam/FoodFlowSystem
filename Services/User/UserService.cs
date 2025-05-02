@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using FluentValidation;
+using FoodFlowSystem.DTOs;
 using FoodFlowSystem.DTOs.Requests.User;
 using FoodFlowSystem.DTOs.Responses;
-using FoodFlowSystem.Middlewares.Exceptions;
 using FoodFlowSystem.Repositories.User;
 
 namespace FoodFlowSystem.Services.User

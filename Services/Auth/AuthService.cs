@@ -1,14 +1,15 @@
 ﻿using AutoMapper;
 using FluentValidation;
+using FoodFlowSystem.DTOs;
 using FoodFlowSystem.DTOs.Requests.Auth;
-using FoodFlowSystem.DTOs.Responses;
 using FoodFlowSystem.Entities.OAuth;
 using FoodFlowSystem.Entities.User;
 using FoodFlowSystem.Helpers;
-using FoodFlowSystem.Middlewares.Exceptions;
 using FoodFlowSystem.Repositories.Auth;
+using FoodFlowSystem.Repositories.EmailTemplates;
 using FoodFlowSystem.Repositories.OAuth;
 using FoodFlowSystem.Repositories.User;
+using FoodFlowSystem.Services.SendMail;
 using Google.Apis.Auth;
 using System.Security.Claims;
 
@@ -19,6 +20,8 @@ namespace FoodFlowSystem.Services.Auth
         private readonly IAuthRepository _authRepository;
         private readonly IUserRepository _userRepository;
         private readonly IOAuthRepository _oauthRepository;
+        private readonly IEmailTemplatesRepository _emailTemplatesRepository;
+        private readonly ISendMailService _sendMailService;
         private readonly ILogger<AuthService> _logger;
         private readonly IMapper _mapper;
         private readonly IHttpContextAccessor _httpContextAccessor;
@@ -27,12 +30,14 @@ namespace FoodFlowSystem.Services.Auth
         private readonly IValidator<RegisterRequest> _registerValidator;
 
         public AuthService(
-            IAuthRepository authRepository, 
+            IAuthRepository authRepository,
             IUserRepository userRepository,
             IOAuthRepository oauthRepository,
-            ILogger<AuthService> logger, 
-            IMapper mapper, 
-            IHttpContextAccessor httpContextAccessor, 
+            IEmailTemplatesRepository emailTemplatesRepository,
+            ISendMailService sendMailService,
+            ILogger<AuthService> logger,
+            IMapper mapper,
+            IHttpContextAccessor httpContextAccessor,
             JwtHelper jwtHelper,
             IValidator<LoginRequest> loginValidator,
             IValidator<RegisterRequest> registerValidator)
@@ -40,6 +45,8 @@ namespace FoodFlowSystem.Services.Auth
             _authRepository = authRepository;
             _userRepository = userRepository;
             _oauthRepository = oauthRepository;
+            _emailTemplatesRepository = emailTemplatesRepository;
+            _sendMailService = sendMailService;
             _logger = logger;
             _mapper = mapper;
             _httpContextAccessor = httpContextAccessor;
@@ -82,6 +89,20 @@ namespace FoodFlowSystem.Services.Auth
                     };
 
                     await _oauthRepository.AddAsync(newOauth);
+
+                    var emailTemplate = await _emailTemplatesRepository.GetTemplateByNameAsync("WelcomeNewUser");
+                    if (emailTemplate == null)
+                    {
+                        throw new ApiException("Email template not found", 404);
+                    }
+
+                    var emailBody = emailTemplate.Body
+                        .Replace("{firstName}", newUser.FirstName)
+                        .Replace("{fullName}", newUser.LastName + " " + newUser.FirstName)
+                        .Replace("{web}", "http://localhost:5173/");
+
+                    await _sendMailService.SendMailAsync(newUser.Email, emailTemplate.Subject, emailBody);
+
                     _logger.LogInformation("Register user with google account success");
                 }
 
@@ -115,8 +136,8 @@ namespace FoodFlowSystem.Services.Auth
             {
                 throw new ApiException("Không thể xác thực với Google. Vui lòng thử lại sau", 500);
             }
-        }   
-        
+        }
+
         public async Task LoginAsync(LoginRequest request)
         {
             var validationResult = await _loginValidator.ValidateAsync(request);
@@ -134,7 +155,7 @@ namespace FoodFlowSystem.Services.Auth
             if (user == null)
             {
                 throw new ApiException("User doesn't exist", 400);
-            } 
+            }
             else
             {
                 var passWordHashed = HashPassword.Hash(request.Password);

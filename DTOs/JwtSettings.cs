@@ -1,6 +1,6 @@
-﻿namespace FoodFlowSystem.Entities
+﻿namespace FoodFlowSystem.DTOs
 {
-    public class JwtSettingClass
+    public class JwtSettings
     {
         public string SecretKey { get; set; }
         public string Issuer { get; set; }
