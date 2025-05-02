@@ -16,9 +16,14 @@ namespace FoodFlowSystem.Repositories
             _dbSet = dbContext.Set<T>();
         }
 
-        public async Task<IEnumerable<T>> GetAllAsync()
+        public async Task<IEnumerable<T>> GetAllAsync(int page, int pageSize)
         {
-            return await _dbSet.ToListAsync();
+            var data = await _dbSet
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return data;
         }
 
         public async Task<T> GetByIdAsync(int id)
@@ -63,6 +68,12 @@ namespace FoodFlowSystem.Repositories
         {
             await _dbSet.AddAsync(entity);
             return entity;
+        }
+
+        public async Task<int> CountAllAsync()
+        {
+            var count = await _dbSet.CountAsync();
+            return count;
         }
     }
 }

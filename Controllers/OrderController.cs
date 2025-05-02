@@ -29,6 +29,14 @@ namespace FoodFlowSystem.Controllers
             return Ok(order);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetAllOrders([FromQuery] int page = 1, [FromQuery] int size = 30, [FromQuery] string search = null)
+        {
+            var orders = await _orderService.GetAllOrdersAsync(page, size);
+
+            return Ok(orders);
+        }
+
         [HttpGet("order")]
         public async Task<IActionResult> GetOrder([FromQuery] int id)
         {
@@ -50,17 +58,24 @@ namespace FoodFlowSystem.Controllers
             return Ok();
         }
 
-        [HttpPost("by-date")]
+        [HttpPost("date")]
         public async Task<IActionResult> GetOrderByDate([FromBody] DateTime date)
         {
             var orders = await _orderService.GetOrderByDate(date);
             return Ok(orders);
         }
 
-        [HttpPost("by-range-date")]
+        [HttpPost("range-date")]
         public async Task<IActionResult> GetOrderRangeDate([FromBody] DateTime startDate, DateTime endDate)
         {
             var orders = await _orderService.GetOrderRangeDate(startDate, endDate);
+            return Ok(orders);
+        }
+
+        [HttpGet("pending")]
+        public async Task<IActionResult> GetPendingOrders()
+        {
+            var orders = await _orderService.GetPendingOrdersAsync();
             return Ok(orders);
         }
     }

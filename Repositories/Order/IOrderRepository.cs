@@ -8,5 +8,7 @@ namespace FoodFlowSystem.Repositories.Order
         Task<IEnumerable<OrderEntity>> GetByDateAsync(DateTime date);
         Task<IEnumerable<OrderEntity>> GetByDateRangeAsync(DateTime startDate, DateTime endDate);
         Task<IEnumerable<OrderEntity>> GetByUserIdAsync(int id);
+        Task<IEnumerable<OrderEntity>> GetPendingOrdersAsync();
+        Task<IEnumerable<OrderEntity>> GetAllOrdersAsync(int page, int size, string search = null);
     }
 }
