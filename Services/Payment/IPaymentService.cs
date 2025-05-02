@@ -5,6 +5,7 @@ namespace FoodFlowSystem.Services.Payment
 {
     public interface IPaymentService
     {
+        Task<bool> PaymentConfirmationAsync(PaymentConfirmationRequest request);
         Task<PaymentResponse> CreatePaymentAsync(CreatePaymentRequest request);
         Task<PaymentResponse> ProcessVNPayCallbackAsync(VNPayResponse response);
     }
