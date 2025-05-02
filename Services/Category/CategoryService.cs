@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using FluentValidation;
+using FoodFlowSystem.DTOs;
 using FoodFlowSystem.DTOs.Requests.Category;
 using FoodFlowSystem.DTOs.Responses;
 using FoodFlowSystem.Entities.Category;
-using FoodFlowSystem.Middlewares.Exceptions;
 using FoodFlowSystem.Repositories.Category;
 
 namespace FoodFlowSystem.Services.Category

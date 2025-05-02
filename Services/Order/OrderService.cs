@@ -1,17 +1,17 @@
 ﻿using AutoMapper;
 using FluentValidation;
-using FoodFlowSystem.Contexts;
 using FoodFlowSystem.Data.DbContexts;
+using FoodFlowSystem.DTOs;
 using FoodFlowSystem.DTOs.Requests.Order;
 using FoodFlowSystem.DTOs.Requests.OrderItem;
 using FoodFlowSystem.DTOs.Requests.Payment;
 using FoodFlowSystem.DTOs.Responses;
-using FoodFlowSystem.DTOs.Responses.Payments;
 using FoodFlowSystem.Entities.Invoice;
 using FoodFlowSystem.Entities.Order;
 using FoodFlowSystem.Entities.OrderItem;
 using FoodFlowSystem.Entities.Payment;
-using FoodFlowSystem.Middlewares.Exceptions;
+using FoodFlowSystem.Extensions;
+using FoodFlowSystem.Repositories.EmailTemplates;
 using FoodFlowSystem.Repositories.Invoice;
 using FoodFlowSystem.Repositories.Order;
 using FoodFlowSystem.Repositories.OrderItem;
@@ -20,6 +20,7 @@ using FoodFlowSystem.Repositories.Product;
 using FoodFlowSystem.Repositories.ProductVersion;
 using FoodFlowSystem.Repositories.User;
 using FoodFlowSystem.Services.Payment;
+using FoodFlowSystem.Services.SendMail;
 
 namespace FoodFlowSystem.Services.Order
 {

@@ -1,5 +1,5 @@
-﻿using FoodFlowSystem.DTOs.Requests.Payment.PaymentConfigs;
-using FoodFlowSystem.Entities;
+﻿using FoodFlowSystem.DTOs;
+using FoodFlowSystem.DTOs.Requests.Payment.PaymentConfigs;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -10,9 +10,9 @@ namespace FoodFlowSystem.Helpers
 {
     public class JwtHelper
     {
-        private readonly JwtSettingClass _config;
+        private readonly JwtSettings _config;
 
-        public JwtHelper(IOptions<JwtSettingClass> options)
+        public JwtHelper(IOptions<JwtSettings> options)
         {
             _config = options.Value;
         }

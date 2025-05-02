@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
 using FluentValidation;
+using FoodFlowSystem.DTOs;
 using FoodFlowSystem.DTOs.Requests.Product;
 using FoodFlowSystem.DTOs.Responses;
 using FoodFlowSystem.Entities.Product;
 using FoodFlowSystem.Entities.ProductVersions;
-using FoodFlowSystem.Middlewares.Exceptions;
 using FoodFlowSystem.Repositories.Product;
 using FoodFlowSystem.Repositories.ProductVersion;
 

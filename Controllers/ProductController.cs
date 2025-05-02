@@ -1,4 +1,4 @@
-﻿using FoodFlowSystem.Contexts;
+﻿using FoodFlowSystem.Extensions;
 using FoodFlowSystem.DTOs.Requests.Product;
 using FoodFlowSystem.Services.Product;
 using Microsoft.AspNetCore.Authorization;

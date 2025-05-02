@@ -47,6 +47,16 @@ namespace FoodFlowSystem.Repositories.Order
             return data;
         }
 
+        public async Task<OrderEntity> GetOrderDetailByIdAsync(int id)
+        {
+            var data = await _dbContext.Orders
+                .Include(x => x.User)
+                .Include(x => x.OrderItems)
+                .ThenInclude(x => x.Product)
+                .FirstOrDefaultAsync(x => x.ID == id);
+            return data;
+        }
+
         public async Task<IEnumerable<OrderEntity>> GetPendingOrdersAsync()
         {
             var data = await _dbContext.Orders

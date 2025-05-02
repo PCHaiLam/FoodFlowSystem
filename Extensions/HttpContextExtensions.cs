@@ -1,6 +1,6 @@
 ﻿using FoodFlowSystem.DTOs;
 
-namespace FoodFlowSystem.Contexts
+namespace FoodFlowSystem.Extensions
 {
     public static class HttpContextExtensions
     {
