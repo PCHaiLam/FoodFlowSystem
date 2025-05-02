@@ -5,7 +5,9 @@ using FoodFlowSystem.DTOs.Responses.Payments;
 using FoodFlowSystem.Entities.Payment;
 using FoodFlowSystem.Middlewares.Exceptions;
 using FoodFlowSystem.Repositories.Invoice;
+using FoodFlowSystem.Repositories.Order;
 using FoodFlowSystem.Repositories.Payment;
+using FoodFlowSystem.Services.Order;
 using System.CodeDom;
 
 namespace FoodFlowSystem.Services.Payment
@@ -14,6 +16,7 @@ namespace FoodFlowSystem.Services.Payment
     {
         private readonly IPaymentRepository _paymentRepository;
         private readonly IInvoiceRepository _invoiceRepository;
+        private readonly IOrderRepository _orderRepository;
         private readonly IMapper _mapper;
         private readonly ILogger<PaymentService> _logger;
         private readonly IValidator<CreatePaymentRequest> _createValidator;
@@ -21,6 +24,7 @@ namespace FoodFlowSystem.Services.Payment
         public PaymentService(
             IPaymentRepository paymentRepository,
             IInvoiceRepository invoiceRepository,
+            IOrderRepository orderRepository,
             IMapper mapper,
             ILogger<PaymentService> logger,
             IValidator<CreatePaymentRequest> createValidator
@@ -28,6 +32,7 @@ namespace FoodFlowSystem.Services.Payment
         {
             _paymentRepository = paymentRepository;
             _invoiceRepository = invoiceRepository;
+            _orderRepository = orderRepository;
             _mapper = mapper;
             _logger = logger;
             _createValidator = createValidator;
@@ -61,6 +66,24 @@ namespace FoodFlowSystem.Services.Payment
             var result = _mapper.Map<ICollection<PaymentResponse>>(payments);
 
             return result;
+        }
+
+        public async Task<bool> PaymentConfirmationAsync(PaymentConfirmationRequest request)
+        {
+            var order = await _orderRepository.GetByIdAsync(request.OrderId);
+            if (order == null)
+            {
+                throw new ApiException("Không có đơn hàng", 404);
+            }
+            if (order.Status != "Pending")
+            {
+                throw new ApiException("Đơn hàng đã được thanh toán", 400);
+            }
+
+            order.Status = "Completed";
+            await _orderRepository.UpdateAsync(order);
+
+            return true;
         }
 
         public async Task<PaymentResponse> ProcessVNPayCallbackAsync(VNPayResponse response)

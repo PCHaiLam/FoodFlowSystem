@@ -19,12 +19,12 @@ namespace FoodFlowSystem.Controllers
             _vnPayService = vNPayService;
         }
 
-        //[HttpGet]
-        //public async Task<IActionResult> GetPayments()
-        //{
-        //    var payments = await _paymentService.GetAllPaymentsAsync();
-        //    return Ok(payments);
-        //}
+        [HttpPatch]
+        public async Task<IActionResult> PaymentConfirmationAsync([FromBody] PaymentConfirmationRequest request)
+        {
+            var payments = await _paymentService.PaymentConfirmationAsync(request);
+            return Ok(payments);
+        }
 
         [HttpPost]
         public async Task<IActionResult> CreatePayment([FromBody] CreatePaymentRequest request)
