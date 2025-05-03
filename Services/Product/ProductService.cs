@@ -7,6 +7,7 @@ using FoodFlowSystem.Entities.Product;
 using FoodFlowSystem.Entities.ProductVersions;
 using FoodFlowSystem.Repositories.Product;
 using FoodFlowSystem.Repositories.ProductVersion;
+using Newtonsoft.Json.Linq;
 
 namespace FoodFlowSystem.Services.Product
 {
@@ -113,9 +114,43 @@ namespace FoodFlowSystem.Services.Product
             return result;
         }
 
-        public async Task<IEnumerable<ProductResponse>> GetAllActiveAsync(int page, int pageSize, string filter, string search, string category, int? minPrice, int? maxPrice, string rating, string sort)
+        public async Task<IEnumerable<ProductResponse>> GetAllActiveAsync(string filter)
         {
-            var list = await _productRepository.GetAllActiceAsync(page, pageSize, filter, search, category, minPrice, maxPrice, rating, sort);
+            // filter dạng json
+            JObject filterJson = string.IsNullOrEmpty(filter) ? new JObject() : JObject.Parse(filter);
+
+            //string quickFilter = filterJson["quickFilter"]?.ToString();
+            //quickFilter = string.IsNullOrWhiteSpace(quickFilter) ? null : quickFilter;
+
+            string category = filterJson["category"]?.ToString();
+            category = string.IsNullOrWhiteSpace(category) ? null : category;
+
+            JArray priceRange = filterJson["priceRange"] as JArray;
+            decimal minPrice = 0;
+            decimal maxPrice = 0;
+            if (priceRange != null && priceRange.Count >= 2)
+            {
+                decimal tempMin = priceRange[0].ToObject<decimal>();
+                decimal tempMax = priceRange[1].ToObject<decimal>();
+                if (tempMin != 0 || tempMax != 0)
+                {
+                    minPrice = tempMin;
+                    maxPrice = tempMax;
+                }
+            }
+
+            //float rating = 4;
+            //string ratingStr = filterJson["rating"]?.ToString();
+            //if (!string.IsNullOrWhiteSpace(ratingStr) && float.TryParse(ratingStr, out float parsedRating))
+            //{
+            //    rating = parsedRating;
+            //}
+
+            string sortBy = filterJson["sort"]?.ToString();
+            sortBy = string.IsNullOrWhiteSpace(sortBy) ? null : sortBy;
+
+
+            var list = await _productRepository.GetAllActiceAsync(category, minPrice, maxPrice, sortBy);
             var result = _mapper.Map<IEnumerable<ProductResponse>>(list);
             if (!result.Any())
             {

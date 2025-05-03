@@ -25,25 +25,9 @@ namespace FoodFlowSystem.Controllers
         }
 
         [HttpGet("active")]
-        public async Task<IActionResult> GetAllActiveAsync(
-            [FromQuery] int page = 1,
-            [FromQuery] int size = 10,
-            [FromQuery] string filter = null,
-            [FromQuery] string search = null,
-            [FromQuery] string category = null,
-            [FromQuery] int? minPrice = null,
-            [FromQuery] int? maxPrice = null,
-            [FromQuery] string rating = null,
-            [FromQuery] string sort = null)
+        public async Task<IActionResult> GetAllActiveAsync([FromQuery] string filter = null, [FromQuery] string quickFilter = null, [FromQuery] string rating = null)
         {
-            var count = await _productService.CountAllActive();
-
-            if (filter == "all")
-            {
-                this.HttpContext.SetPaginationInfo(count, page, size, 10);
-            }
-
-            var result = await _productService.GetAllActiveAsync(page, size, filter, search, category, minPrice, maxPrice, rating, sort);
+            var result = await _productService.GetAllActiveAsync(filter);
 
             return Ok(result);
         }

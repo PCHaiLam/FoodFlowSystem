@@ -38,68 +38,43 @@ namespace FoodFlowSystem.Repositories.Product
             return _dbContext.Products.FirstOrDefaultAsync(x => x.Name == input);
         }
 
-        public async Task<IEnumerable<ProductEntity>> GetAllActiceAsync(int page, int pageSize, string filter, string search, string category, int? minPrice, int? maxPrice, string rating, string sort)
+        public async Task<IEnumerable<ProductEntity>> GetAllActiceAsync(string category, decimal minPrice, decimal maxPrice, string sort)
         {
-            var result = new List<ProductEntity>();
             var query = _dbContext.Products
                         .Include(x => x.ProductVersions)
                         .Where(x => x.ProductVersions.Any(x => x.IsActive == true));
-
-            //filter = "all" hoặc các điều kiện (search, category, minPrice, maxPrice, rating, sort) == null --> skip.take.tolistasync
-            if (filter == "all" 
-                || (string.IsNullOrEmpty(search) 
-                && string.IsNullOrEmpty(category) 
-                && minPrice == null 
-                && maxPrice == null
-                && string.IsNullOrEmpty(rating)
-                && string.IsNullOrEmpty(sort)
-                ))
-            {
-                
-                result = await query
-                            .Skip((page - 1) * pageSize)
-                            .Take(pageSize)
-                            .ToListAsync();
-                return result;
-            }
-
-            if (!string.IsNullOrEmpty(search))
-            {
-                query = query.Where(x => x.Name.Contains(search));
-            }
 
             if (!string.IsNullOrEmpty(category))
             {
                 query = query.Where(x => x.Category.Name.Contains(category));
             }
 
-            if (minPrice.HasValue)
+            if (minPrice > 0)
             {
-                query = query.Where(x => x.ProductVersions.Any(x => x.Price >= minPrice.Value));
+                query = query.Where(x => x.ProductVersions.Any(x => x.Price >= minPrice));
             }
 
-            if (maxPrice.HasValue)
+            if (maxPrice > 0)
             {
-                query = query.Where(x => x.ProductVersions.Any(x => x.Price <= maxPrice.Value));
+                query = query.Where(x => x.ProductVersions.Any(x => x.Price <= maxPrice));
             }
 
             if (!string.IsNullOrEmpty(sort))
             {
-                switch (sort.ToLower())
+                switch (sort)
                 {
                     case "asc":
-                        query = query.OrderBy(x => x.Name);
+                        query = query.OrderBy(x => x.ProductVersions.FirstOrDefault().Price);
                         break;
                     case "desc":
-                        query = query.OrderByDescending(x => x.Name);
+                        query = query.OrderByDescending(x => x.ProductVersions.FirstOrDefault().Price);
                         break;
                     default:
                         break;
                 }
             }
 
-            result = await query.ToListAsync();
-            return result;
+            return await query.ToListAsync();
         }
 
         public async Task<int> CountActive()
