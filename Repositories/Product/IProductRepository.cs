@@ -8,7 +8,7 @@ namespace FoodFlowSystem.Repositories.Product
         Task<ProductEntity> IsExistProductNameAsync(string input);
         Task<IEnumerable<ProductEntity>> GetByNameAsync(string name);
         Task<IEnumerable<ProductEntity>> GetByPriceAsync(decimal price);
-        Task<IEnumerable<ProductEntity>> GetAllActiceAsync(int page, int pageSize, string filter, string search, string category, int? minPrice, int? maxPrice, string rating, string sort);
+        Task<IEnumerable<ProductEntity>> GetAllActiceAsync(string category, decimal minPrice, decimal maxPrice, string sort);
         Task<int> CountActive();
     }
 }
