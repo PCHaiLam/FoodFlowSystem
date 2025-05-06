@@ -1,4 +1,5 @@
 ﻿using FoodFlowSystem.Data.DbContexts;
+using FoodFlowSystem.DTOs.Responses.Recommendations;
 using FoodFlowSystem.Entities.Order;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,6 +28,27 @@ namespace FoodFlowSystem.Repositories.Order
                 .ToListAsync();
 
             return data;
+        }
+
+        public async Task<ICollection<ProductRecommendations>> GetBestSellerAsync()
+        {
+            var data = _dbContext.Orders
+                .Include(x => x.OrderItems)
+                .ThenInclude(x => x.Product)
+                .SelectMany(o => o.OrderItems)
+                .GroupBy(oi => oi.ProductID)
+                .Select(g => new ProductRecommendations
+                {
+                    ProductId = g.Key,
+                    ProductName = g.First().Product.Name,
+                    ImageUrl = g.First().Product.ImageUrl,
+                    TotalOrders = g.Select(oi => oi.OrderID).Distinct().Count(),
+                    TotalSales = g.Sum(oi => oi.Quantity),
+                    Price = g.First().Product.ProductVersions.OrderByDescending(pv => pv.ID).FirstOrDefault().Price,
+                    CategoryName = g.First().Product.Category.Name
+                });
+
+            return await data.ToListAsync();
         }
 
         public async Task<IEnumerable<OrderEntity>> GetByDateAsync(DateTime date)

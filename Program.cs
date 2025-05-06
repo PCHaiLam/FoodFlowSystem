@@ -27,6 +27,7 @@ using FoodFlowSystem.Services.Invoice;
 using FoodFlowSystem.Services.Order;
 using FoodFlowSystem.Services.Payment;
 using FoodFlowSystem.Services.Product;
+using FoodFlowSystem.Services.Recommendations;
 using FoodFlowSystem.Services.SendMail;
 using FoodFlowSystem.Services.Table;
 using FoodFlowSystem.Services.User;
@@ -152,6 +153,7 @@ builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IVNPayService, VNPayService>();
 builder.Services.AddScoped<ISendMailService, SendMailService>();
+builder.Services.AddScoped<IRecommendationsService, RecommendationsService>();
 
 // JWT 
 builder.Services.AddScoped<JwtHelper>();

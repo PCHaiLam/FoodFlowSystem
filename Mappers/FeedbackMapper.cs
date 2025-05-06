@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using FoodFlowSystem.DTOs.Requests.Feedback;
-using FoodFlowSystem.DTOs.Responses;
+using FoodFlowSystem.DTOs.Responses.Feedbacks;
 using FoodFlowSystem.Entities.Feedback;
 
 namespace FoodFlowSystem.Mappers

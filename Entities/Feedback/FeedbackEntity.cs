@@ -9,6 +9,7 @@ namespace FoodFlowSystem.Entities.Feedback
         public string Comment { get; set; }
         public int ProductID { get; set; }
         public int UserID { get; set; }
+        public int? OrderID { get; set; }
         public ProductEntity Product { get; set; }
         public UserEntity User { get; set; }
     }

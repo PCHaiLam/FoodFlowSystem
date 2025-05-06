@@ -26,6 +26,9 @@ namespace FoodFlowSystem.Entities.Feedback
             builder.Property(f => f.UserID)
                 .IsRequired();
 
+            builder.Property(f => f.OrderID)
+                .IsRequired(false);
+
             builder.HasOne(o => o.Product)
                 .WithMany(f => f.Feedbacks)
                 .HasForeignKey(f => f.ProductID)
