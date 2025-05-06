@@ -1,4 +1,6 @@
-﻿namespace FoodFlowSystem.DTOs.Responses
+﻿using FoodFlowSystem.DTOs.Responses.Feedbacks;
+
+namespace FoodFlowSystem.DTOs.Responses
 {
     public class OrderResponse
     {

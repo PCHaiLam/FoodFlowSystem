@@ -1,4 +1,4 @@
-﻿namespace FoodFlowSystem.DTOs.Responses
+﻿namespace FoodFlowSystem.DTOs.Responses.Feedbacks
 {
     public class FeedbackResponse
     {

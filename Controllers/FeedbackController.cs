@@ -31,9 +31,16 @@ namespace FoodFlowSystem.Controllers
         }
 
         [HttpGet("product")]
-        public async Task<IActionResult> GetFeedbacksByProduct([FromQuery] int id)
+        public async Task<IActionResult> GetFeedbacksByProductId([FromQuery] int id)
         {
             var feedbacks = await _feedbackService.GetFeedbacksByProductIdAsync(id);
+            return Ok(feedbacks);
+        }
+
+        [HttpGet("pending-lastes-order")]
+        public async Task<IActionResult> GetPendingFeedbackByUserId()
+        {
+            var feedbacks = await _feedbackService.GetPendingFeedbackByUserId();
             return Ok(feedbacks);
         }
 
@@ -49,6 +56,13 @@ namespace FoodFlowSystem.Controllers
         {
             var feedback = await _feedbackService.CreateFeedbackAsync(request);
             return Ok(feedback);
+        }
+
+        [HttpPost("list")]
+        public async Task<IActionResult> CreateListFeedbacks([FromBody] CreatListFeedbacksRequest request)
+        {
+            await _feedbackService.CreateListFeedbacksAsync(request);
+            return NoContent();
         }
 
         [HttpPut]

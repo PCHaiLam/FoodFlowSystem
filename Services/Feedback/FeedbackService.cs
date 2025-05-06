@@ -2,7 +2,7 @@
 using FluentValidation;
 using FoodFlowSystem.DTOs;
 using FoodFlowSystem.DTOs.Requests.Feedback;
-using FoodFlowSystem.DTOs.Responses;
+using FoodFlowSystem.DTOs.Responses.Feedbacks;
 using FoodFlowSystem.Entities.Feedback;
 using FoodFlowSystem.Repositories.Feedback;
 
@@ -14,6 +14,7 @@ namespace FoodFlowSystem.Services.Feedback
         private readonly IMapper _mapper;
         private readonly ILogger<FeedbackService> _logger;
         private readonly IValidator<CreateFeedbackRequest> _createFeedbackValidator;
+        private readonly IValidator<CreatListFeedbacksRequest> _creatListFeedbackValidators;
         private readonly IValidator<UpdateFeedbackRequest> _updateFeedbackValidator;
 
         public FeedbackService(
@@ -21,13 +22,15 @@ namespace FoodFlowSystem.Services.Feedback
             IFeedbackRepository feedbackRepository,
             IMapper mapper,
             ILogger<FeedbackService> logger,
-            IValidator<CreateFeedbackRequest> createFeedbackValidator
+            IValidator<CreateFeedbackRequest> createFeedbackValidator,
+            IValidator<CreatListFeedbacksRequest> creatListFeedbackValidators
             ) : base( httpContextAccessor )
         {
             _feedbackRepository = feedbackRepository;
             _mapper = mapper;
             _logger = logger;
             _createFeedbackValidator = createFeedbackValidator;
+            _creatListFeedbackValidators = creatListFeedbackValidators;
         }
 
         public async Task<FeedbackResponse> CreateFeedbackAsync(CreateFeedbackRequest request)
@@ -141,6 +144,41 @@ namespace FoodFlowSystem.Services.Feedback
 
             var result = _mapper.Map<FeedbackResponse>(updatedFeedback);
             return result;
+        }
+
+        public async Task<ICollection<PendingFeedbackResponse>> GetPendingFeedbackByUserId()
+        {
+            var currentUserId = this.GetCurrentUserId();
+            var list = await _feedbackRepository.GetPendingFeedbackByUserIdAsync(currentUserId);
+
+            _logger.LogInformation("Pending feedbacks listed successfully");
+
+            return list;
+        }
+
+        public async Task CreateListFeedbacksAsync(CreatListFeedbacksRequest requests)
+        {
+            var validationResult = await _creatListFeedbackValidators.ValidateAsync(requests);
+            if (!validationResult.IsValid)
+            {
+                var errors = validationResult.Errors.Select(e => new
+                {
+                    Field = e.PropertyName,
+                    Message = e.ErrorMessage
+                });
+                throw new ApiException("Thông tin đánh giá không hợp lệ.", 400, errors);
+            }
+            var currentUserId = this.GetCurrentUserId();
+
+            var feedbacks = _mapper.Map<ICollection<FeedbackEntity>>(requests.ListFeedbacks);
+            foreach (var feedback in feedbacks)
+            {
+                feedback.UserID = currentUserId;
+            }
+
+            await _feedbackRepository.AddListFeedbacksAsync(feedbacks);
+
+            _logger.LogInformation("Feedbacks created successfully");
         }
     }
 }

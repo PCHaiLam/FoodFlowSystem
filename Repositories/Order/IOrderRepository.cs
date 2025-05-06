@@ -1,4 +1,5 @@
-﻿using FoodFlowSystem.Entities.Order;
+﻿using FoodFlowSystem.DTOs.Responses.Recommendations;
+using FoodFlowSystem.Entities.Order;
 
 namespace FoodFlowSystem.Repositories.Order
 {
@@ -11,5 +12,6 @@ namespace FoodFlowSystem.Repositories.Order
         Task<IEnumerable<OrderEntity>> GetByUserIdAsync(int id);
         Task<IEnumerable<OrderEntity>> GetPendingOrdersAsync();
         Task<IEnumerable<OrderEntity>> GetAllOrdersAsync(int page, int size, string search = null);
+        Task<ICollection<ProductRecommendations>> GetBestSellerAsync();
     }
 }
