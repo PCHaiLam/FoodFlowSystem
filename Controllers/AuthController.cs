@@ -42,7 +42,7 @@ namespace FoodFlowSystem.Controllers
             return Ok();
         }
 
-        [HttpPost("login")]
+        [HttpPost("admin-login")]
         [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
