@@ -18,6 +18,7 @@ namespace FoodFlowSystem.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "1,3")]
         public async Task<IActionResult> GetAllAsync()
         {
             var result = await _productService.GetAllAsync();
@@ -41,8 +42,8 @@ namespace FoodFlowSystem.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "1,3")]
-        public async Task<IActionResult> AddAsync([FromBody] CreateProductRequest request)
+        [Authorize(Roles = "1")]
+        public async Task<IActionResult> AddAsync([FromForm] CreateProductRequest request)
         {
             var result = await _productService.AddAsync(request);
             return Ok(result);
