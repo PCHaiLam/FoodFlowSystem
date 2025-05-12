@@ -35,7 +35,8 @@ namespace FoodFlowSystem.Repositories.Product
 
         public Task<ProductEntity> IsExistProductNameAsync(string input)
         {
-            return _dbContext.Products.FirstOrDefaultAsync(x => x.Name == input);
+            var result = _dbContext.Products.FirstOrDefaultAsync(x => x.Name == input);
+            return result;
         }
 
         public async Task<IEnumerable<ProductEntity>> GetAllActiceAsync(string category, decimal minPrice, decimal maxPrice, string sort)

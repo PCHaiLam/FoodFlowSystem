@@ -7,7 +7,9 @@ using FoodFlowSystem.Entities.Product;
 using FoodFlowSystem.Entities.ProductVersions;
 using FoodFlowSystem.Repositories.Product;
 using FoodFlowSystem.Repositories.ProductVersion;
+using FoodFlowSystem.Services.UploadImage;
 using Newtonsoft.Json.Linq;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace FoodFlowSystem.Services.Product
 {
@@ -15,6 +17,7 @@ namespace FoodFlowSystem.Services.Product
     {
         private readonly IProductRepository _productRepository;
         private readonly IProductVersionRepository _productVersionRepository;
+        private readonly ICloudinaryService _cloudinaryService;
         private readonly IMapper _mapper;
         private readonly ILogger<ProductService> _logger;
         private readonly IValidator<UpdateProductRequest> _updateProductValidator;
@@ -23,6 +26,7 @@ namespace FoodFlowSystem.Services.Product
         public ProductService(
             IProductRepository productRepository,
             IProductVersionRepository productVersionRepository,
+            ICloudinaryService cloudinaryService,
             IMapper mapper,
             ILogger<ProductService> logger,
             IValidator<UpdateProductRequest> updateProductValidator,
@@ -31,6 +35,7 @@ namespace FoodFlowSystem.Services.Product
         {
             _productRepository = productRepository;
             _productVersionRepository = productVersionRepository;
+            _cloudinaryService = cloudinaryService;
             _mapper = mapper;
             _logger = logger;
             _updateProductValidator = updateProductValidator;
@@ -47,16 +52,22 @@ namespace FoodFlowSystem.Services.Product
                     Field = e.PropertyName,
                     Message = e.ErrorMessage
                 });
-                throw new ApiException("Invalid input", 400, errors);
+                throw new ApiException("Đầu vào không hợp lệ: ", 400, errors);
             }
 
-            var checkProduct = _productRepository.IsExistProductNameAsync(request.Name);
+            var checkProduct = await _productRepository.IsExistProductNameAsync(request.Name);
             if (checkProduct != null)
             {
-                throw new ApiException("Product already exists", 400);
+                throw new ApiException("Tên sản phẩm đã tồn tại. Vui lòng chọn tên khác.", 400);
             }
 
             var product = _mapper.Map<ProductEntity>(request);
+            if (request.ImageFiles != null)
+            {
+                var image = await _cloudinaryService.UploadImageAsync(request.ImageFiles);
+                product.ImageUrl = image;
+            }
+
             var newProduct = await _productRepository.AddAsync(product);
 
             var productVersion = new ProductVersionEntity

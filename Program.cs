@@ -30,6 +30,7 @@ using FoodFlowSystem.Services.Product;
 using FoodFlowSystem.Services.Recommendations;
 using FoodFlowSystem.Services.SendMail;
 using FoodFlowSystem.Services.Table;
+using FoodFlowSystem.Services.UploadImage;
 using FoodFlowSystem.Services.User;
 using FoodFlowSystem.Validators.Auth;
 using FoodFlowSystem.Validators.Category;
@@ -79,6 +80,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
 builder.Services.Configure<SendMailConfig>(builder.Configuration.GetSection("SendMailConfig"));
 builder.Services.Configure<VNPayConfig>(builder.Configuration.GetSection("PaymentGateways:VNPayConfig"));
+builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
 
 //Interceptors
 builder.Services.AddSingleton<AuditLogInterceptor>();
@@ -154,6 +156,7 @@ builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IVNPayService, VNPayService>();
 builder.Services.AddScoped<ISendMailService, SendMailService>();
 builder.Services.AddScoped<IRecommendationsService, RecommendationsService>();
+builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
 
 // JWT 
 builder.Services.AddScoped<JwtHelper>();
