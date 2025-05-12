@@ -116,7 +116,7 @@ namespace FoodFlowSystem.Services.Auth
                 new Claim("phone", user.Phone ?? ""),
                 new Claim("photoUrl", user.PhotoUrl ?? ""),
                 new Claim("email", user.Email),
-                new Claim("roleId", user.RoleID.ToString()),
+                new Claim(ClaimTypes.Role, user.RoleID.ToString()),
             };
 
                 var token = _jwtHelper.GenerateToken(claims);
@@ -171,7 +171,7 @@ namespace FoodFlowSystem.Services.Auth
                 new Claim("firstName", user.FirstName ?? string.Empty),
                 new Claim("lastName", user.LastName ?? string.Empty),
                 new Claim("email", user.Email ?? string.Empty),
-                new Claim("roleId", user.RoleID.ToString()),
+                new Claim(ClaimTypes.Role, user.RoleID.ToString()),
             };
 
             var token = _jwtHelper.GenerateToken(claims);

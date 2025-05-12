@@ -51,7 +51,8 @@ namespace FoodFlowSystem.Services
 
         protected int GetCurrentUserRole()
         {
-            var roleIdClaim = _httpContextAccessor.HttpContext?.User?.Claims?.FirstOrDefault(c => c.Type == "roleId");
+            //dùng claim.role
+            var roleIdClaim = _httpContextAccessor.HttpContext?.User?.Claims?.FirstOrDefault(c => c.Type == ClaimTypes.Role);
 
             if (roleIdClaim == null || string.IsNullOrEmpty(roleIdClaim.Value))
             {
