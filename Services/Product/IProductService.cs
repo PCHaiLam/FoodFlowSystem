@@ -10,8 +10,6 @@ namespace FoodFlowSystem.Services.Product
         Task<ProductResponse> AddAsync(CreateProductRequest request);
         Task<ProductResponse> UpdateAsync(UpdateProductRequest request);
         Task DeleteAsync(int id);
-        Task<IEnumerable<ProductResponse>> GetByNameAsync(string name);
-        Task<IEnumerable<ProductResponse>> GetByPriceAsync(decimal price);
         Task<IEnumerable<ProductResponse>> GetAllActiveAsync(string filter);
         Task<int> CountAllActive();
     }
