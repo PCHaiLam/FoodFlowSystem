@@ -18,6 +18,7 @@ using FoodFlowSystem.Repositories.OrderItem;
 using FoodFlowSystem.Repositories.Payment;
 using FoodFlowSystem.Repositories.Product;
 using FoodFlowSystem.Repositories.ProductVersion;
+using FoodFlowSystem.Repositories.Statistic;
 using FoodFlowSystem.Repositories.Table;
 using FoodFlowSystem.Repositories.User;
 using FoodFlowSystem.Services.Auth;
@@ -29,6 +30,7 @@ using FoodFlowSystem.Services.Payment;
 using FoodFlowSystem.Services.Product;
 using FoodFlowSystem.Services.Recommendations;
 using FoodFlowSystem.Services.SendMail;
+using FoodFlowSystem.Services.Statistic;
 using FoodFlowSystem.Services.Table;
 using FoodFlowSystem.Services.UploadImage;
 using FoodFlowSystem.Services.User;
@@ -142,6 +144,7 @@ builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
 builder.Services.AddScoped<IEmailTemplatesRepository, EmailTemplatesRepository>();
+builder.Services.AddScoped<IStatisticRepository, StatisticRepository>();
 
 // Dependency Injection - Services
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -157,6 +160,7 @@ builder.Services.AddScoped<IVNPayService, VNPayService>();
 builder.Services.AddScoped<ISendMailService, SendMailService>();
 builder.Services.AddScoped<IRecommendationsService, RecommendationsService>();
 builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
+builder.Services.AddScoped<IStatisticService, StatisticService>();
 
 // JWT 
 builder.Services.AddScoped<JwtHelper>();
