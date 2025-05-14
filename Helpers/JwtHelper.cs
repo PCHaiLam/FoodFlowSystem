@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace FoodFlowSystem.Helpers
@@ -33,25 +34,41 @@ namespace FoodFlowSystem.Helpers
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        //public ClaimsPrincipal ValidateToken(string token)
-        //{
-        //    var secretKey = _config.SecretKey;
-        //    var tokenHandler = new JwtSecurityTokenHandler();
-        //    var key = System.Text.Encoding.UTF8.GetBytes(secretKey);
-        //    var validationParameters = new TokenValidationParameters
-        //    {
-        //        ValidateIssuerSigningKey = true,
-        //        IssuerSigningKey = new SymmetricSecurityKey(key),
-        //        ValidateIssuer = false,
-        //        ValidateAudience = false,
-        //        ValidateLifetime = true,
-        //    };
-        //    return tokenHandler.ValidateToken(token, validationParameters, out _);
-        //}
+        public ClaimsPrincipal ValidateToken(string token)
+        {
+            var secretKey = _config.SecretKey;
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(secretKey);
+            var validationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+                ValidateIssuer = false,
+                ValidateAudience = false,
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero
+            };
+            return tokenHandler.ValidateToken(token, validationParameters, out _);
+        }
 
         public string CreateRefreshToken()
         {
-            return "refreshToken";
+            var randomNumber = new byte[32];
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(randomNumber);
+                return Convert.ToBase64String(randomNumber);
+            }
+        }
+
+        public DateTime GetAccessTokenExpiryTime()
+        {
+            return DateTime.UtcNow.AddMinutes(_config.AccessTokenExpiryInMinutes);
+        }
+
+        public DateTime GetRefreshTokenExpiryTime()
+        {
+            return DateTime.UtcNow.AddDays(_config.RefreshTokenExpiryInDays);
         }
     }
 }

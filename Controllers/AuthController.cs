@@ -50,5 +50,13 @@ namespace FoodFlowSystem.Controllers
             
             return Ok();
         }
+
+        [HttpPost("refresh-token")]
+        [AllowAnonymous]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
+        {
+            var result = await _authService.RefreshTokenAsync(request);
+            return Ok(result);
+        }
     }
 }
