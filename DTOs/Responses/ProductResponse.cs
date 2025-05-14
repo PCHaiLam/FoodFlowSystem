@@ -11,7 +11,7 @@ namespace FoodFlowSystem.DTOs.Responses
         public string Description { get; set; }
         public string Status { get; set; }
         public string ImageUrl { get; set; }
-        public double AverageRating { get; set; }
+        public double AverageRated { get; set; }
         public int CategoryID { get; set; }
         public DateTime CreatedAt { get; set; }
         public ICollection<FeedbackResponse> Feedbacks { get; set; }

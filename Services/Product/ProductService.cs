@@ -5,6 +5,7 @@ using FoodFlowSystem.DTOs.Requests.Product;
 using FoodFlowSystem.DTOs.Responses;
 using FoodFlowSystem.Entities.Product;
 using FoodFlowSystem.Entities.ProductVersions;
+using FoodFlowSystem.Repositories.Feedback;
 using FoodFlowSystem.Repositories.Product;
 using FoodFlowSystem.Repositories.ProductVersion;
 using FoodFlowSystem.Services.UploadImage;
@@ -17,6 +18,7 @@ namespace FoodFlowSystem.Services.Product
     {
         private readonly IProductRepository _productRepository;
         private readonly IProductVersionRepository _productVersionRepository;
+        private readonly IFeedbackRepository _feedbackRepository;
         private readonly ICloudinaryService _cloudinaryService;
         private readonly IMapper _mapper;
         private readonly ILogger<ProductService> _logger;
@@ -26,6 +28,7 @@ namespace FoodFlowSystem.Services.Product
         public ProductService(
             IProductRepository productRepository,
             IProductVersionRepository productVersionRepository,
+            IFeedbackRepository feedbackRepository,
             ICloudinaryService cloudinaryService,
             IMapper mapper,
             ILogger<ProductService> logger,
@@ -35,6 +38,7 @@ namespace FoodFlowSystem.Services.Product
         {
             _productRepository = productRepository;
             _productVersionRepository = productVersionRepository;
+            _feedbackRepository = feedbackRepository;
             _cloudinaryService = cloudinaryService;
             _mapper = mapper;
             _logger = logger;
@@ -117,7 +121,9 @@ namespace FoodFlowSystem.Services.Product
             foreach (var product in result)
             {
                 var lastProductVersion = await _productVersionRepository.GetLastProductVersionByProductIdAsync(product.ID);
+                var feedback = await _feedbackRepository.GetAverageRateAndTotalFeedbacksByProductIdAsync(product.ID);
                 product.Price = lastProductVersion.Price;
+                product.AverageRated = feedback?.AverageRated ?? 0;
             }
 
             _logger.LogInformation("Get all products successfully");
@@ -172,10 +178,13 @@ namespace FoodFlowSystem.Services.Product
             foreach (var product in result)
             {
                 var lastProductVersion = await _productVersionRepository.GetLastProductVersionByProductIdAsync(product.ID);
+                var feedback = await _feedbackRepository.GetAverageRateAndTotalFeedbacksByProductIdAsync(product.ID);
                 product.Price = lastProductVersion.Price;
+                product.AverageRated = feedback?.AverageRated ?? 0;
             }
 
             _logger.LogInformation("Get all active products successfully");
+            result = result.OrderByDescending(x => x.AverageRated).ToList();
 
             return result;
         }
@@ -192,38 +201,6 @@ namespace FoodFlowSystem.Services.Product
             _logger.LogInformation("Count all active products successfully");
 
             return count;
-        }
-
-        public async Task<IEnumerable<ProductResponse>> GetByNameAsync(string name)
-        {
-            var list = await _productRepository.GetByNameAsync(name);
-            var result = _mapper.Map<IEnumerable<ProductResponse>>(list);
-
-            foreach (var product in result)
-            {
-                var lastProductVersion = await _productVersionRepository.GetLastProductVersionByProductIdAsync(product.ID);
-                product.Price = lastProductVersion.Price;
-            }
-
-            _logger.LogInformation($"Get product by name successfully: {name}");
-
-            return result;
-        }
-
-        public async Task<IEnumerable<ProductResponse>> GetByPriceAsync(decimal price)
-        {
-            var list = await _productRepository.GetByPriceAsync(price);
-            var result = _mapper.Map<IEnumerable<ProductResponse>>(list);
-
-            foreach (var product in result)
-            {
-                var lastProductVersion = await _productVersionRepository.GetLastProductVersionByProductIdAsync(product.ID);
-                product.Price = lastProductVersion.Price;
-            }
-
-            _logger.LogInformation($"Get product by price successfully: {price}");
-
-            return result;
         }
 
         public async Task<ProductResponse> UpdateAsync(UpdateProductRequest request)
@@ -284,7 +261,9 @@ namespace FoodFlowSystem.Services.Product
             var result = _mapper.Map<ProductResponse>(product);
 
             var lastProductVersion = await _productVersionRepository.GetLastProductVersionByProductIdAsync(product.ID);
+            var feedback = await _feedbackRepository.GetAverageRateAndTotalFeedbacksByProductIdAsync(product.ID);
 
+            result.AverageRated = feedback?.AverageRated ?? 0;
             result.Price = lastProductVersion.Price;
 
             _logger.LogInformation("Get product by id successfully: ", id);

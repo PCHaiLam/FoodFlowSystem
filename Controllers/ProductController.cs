@@ -64,19 +64,5 @@ namespace FoodFlowSystem.Controllers
             await _productService.DeleteAsync(id);
             return Ok();
         }
-
-        [HttpGet("name")]
-        public async Task<IActionResult> GetByNameAsync([FromQuery] string name)
-        {
-            var result = await _productService.GetByNameAsync(name);
-            return Ok(result);
-        }
-
-        [HttpGet("price")]
-        public async Task<IActionResult> GetByPriceAsync([FromQuery] decimal price)
-        {
-            var result = await _productService.GetByPriceAsync(price);
-            return Ok(result);
-        }
     }
 }
