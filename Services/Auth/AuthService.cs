@@ -2,12 +2,15 @@
 using FluentValidation;
 using FoodFlowSystem.DTOs;
 using FoodFlowSystem.DTOs.Requests.Auth;
+using FoodFlowSystem.DTOs.Responses.Auth;
 using FoodFlowSystem.Entities.OAuth;
+using FoodFlowSystem.Entities.Token;
 using FoodFlowSystem.Entities.User;
 using FoodFlowSystem.Helpers;
 using FoodFlowSystem.Repositories.Auth;
 using FoodFlowSystem.Repositories.EmailTemplates;
 using FoodFlowSystem.Repositories.OAuth;
+using FoodFlowSystem.Repositories.Token;
 using FoodFlowSystem.Repositories.User;
 using FoodFlowSystem.Services.SendMail;
 using Google.Apis.Auth;
@@ -28,6 +31,7 @@ namespace FoodFlowSystem.Services.Auth
         private readonly JwtHelper _jwtHelper;
         private readonly IValidator<LoginRequest> _loginValidator;
         private readonly IValidator<RegisterRequest> _registerValidator;
+        private readonly ITokenRepository _tokenRepository;
 
         public AuthService(
             IAuthRepository authRepository,
@@ -40,7 +44,8 @@ namespace FoodFlowSystem.Services.Auth
             IHttpContextAccessor httpContextAccessor,
             JwtHelper jwtHelper,
             IValidator<LoginRequest> loginValidator,
-            IValidator<RegisterRequest> registerValidator)
+            IValidator<RegisterRequest> registerValidator,
+            ITokenRepository tokenRepository)
         {
             _authRepository = authRepository;
             _userRepository = userRepository;
@@ -53,6 +58,7 @@ namespace FoodFlowSystem.Services.Auth
             _jwtHelper = jwtHelper;
             _loginValidator = loginValidator;
             _registerValidator = registerValidator;
+            _tokenRepository = tokenRepository;
         }
 
         public async Task LoginWithGoogleAsync(GoogleLoginRequest request)
@@ -110,20 +116,34 @@ namespace FoodFlowSystem.Services.Auth
 
                 var claims = new[]
                 {
-                new Claim("userId", user.ID.ToString()),
-                new Claim("firstName", user.FirstName),
-                new Claim("lastName", user.LastName ?? ""),
-                new Claim("phone", user.Phone ?? ""),
-                new Claim("photoUrl", user.PhotoUrl ?? ""),
-                new Claim("email", user.Email),
-                new Claim(ClaimTypes.Role, user.RoleID.ToString()),
-            };
+                    new Claim("userId", user.ID.ToString()),
+                    new Claim("firstName", user.FirstName),
+                    new Claim("lastName", user.LastName ?? ""),
+                    new Claim("phone", user.Phone ?? ""),
+                    new Claim("photoUrl", user.PhotoUrl ?? ""),
+                    new Claim("email", user.Email),
+                    new Claim(ClaimTypes.Role, user.RoleID.ToString()),
+                };
 
-                var token = _jwtHelper.GenerateToken(claims);
+                var accessToken = _jwtHelper.GenerateToken(claims);
                 var refreshToken = _jwtHelper.CreateRefreshToken();
+                var expiresAt = _jwtHelper.GetRefreshTokenExpiryTime();
+
+                // Lưu token vào database
+                var tokenEntity = new TokenEntity
+                {
+                    AccessToken = accessToken,
+                    RefreshToken = refreshToken,
+                    ExpiresAt = expiresAt,
+                    UserId = user.ID,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                await _tokenRepository.AddAsync(tokenEntity);
 
                 var responseHeaders = _httpContextAccessor.HttpContext.Response.Headers;
-                responseHeaders.Append("auth_token", $"Bearer {token}");
+                responseHeaders.Append("auth_token", $"Bearer {accessToken}");
                 responseHeaders.Append("refresh_token", refreshToken);
 
                 _logger.LogInformation("Login with google success");
@@ -174,11 +194,25 @@ namespace FoodFlowSystem.Services.Auth
                 new Claim(ClaimTypes.Role, user.RoleID.ToString()),
             };
 
-            var token = _jwtHelper.GenerateToken(claims);
+            var accessToken = _jwtHelper.GenerateToken(claims);
             var refreshToken = _jwtHelper.CreateRefreshToken();
+            var expiresAt = _jwtHelper.GetRefreshTokenExpiryTime();
+
+            // Lưu token vào database
+            var tokenEntity = new TokenEntity
+            {
+                AccessToken = accessToken,
+                RefreshToken = refreshToken,
+                ExpiresAt = expiresAt,
+                UserId = user.ID,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            await _tokenRepository.AddAsync(tokenEntity);
 
             var responseHeaders = _httpContextAccessor.HttpContext.Response.Headers;
-            responseHeaders.Append("auth_token", $"Bearer {token}");
+            responseHeaders.Append("auth_token", $"Bearer {accessToken}");
             responseHeaders.Append("refresh_token", refreshToken);
 
             _logger.LogInformation("Login success");
@@ -210,6 +244,86 @@ namespace FoodFlowSystem.Services.Auth
 
             await _authRepository.AddAsync(newUser);
             _logger.LogInformation("Register success");
+        }
+
+        public async Task<TokenResponse> RefreshTokenAsync(RefreshTokenRequest request)
+        {
+            // Kiểm tra refresh token có tồn tại không
+            var storedToken = await _tokenRepository.GetByRefreshTokenAsync(request.RefreshToken);
+            if (storedToken == null)
+            {
+                throw new ApiException("Refresh token không hợp lệ", 401);
+            }
+
+            // Lấy thông tin người dùng
+            var user = await _userRepository.GetByIdAsync(storedToken.UserId);
+            if (user == null)
+            {
+                throw new ApiException("Không tìm thấy người dùng", 404);
+            }
+
+            // Tạo claims cho access token mới
+            var claims = new[]
+            {
+                new Claim("userId", user.ID.ToString()),
+                new Claim("firstName", user.FirstName ?? string.Empty),
+                new Claim("lastName", user.LastName ?? string.Empty),
+                new Claim("email", user.Email ?? string.Empty),
+                new Claim(ClaimTypes.Role, user.RoleID.ToString()),
+            };
+
+            // Tạo token mới
+            var newAccessToken = _jwtHelper.GenerateToken(claims);
+            string newRefreshToken;
+            DateTime newExpiresAt;
+            TokenResponse tokenResponse;
+
+            // Kiểm tra refresh token còn hạn hay không
+            if (storedToken.ExpiresAt > DateTime.UtcNow)
+            {
+                // Refresh token còn hạn, chỉ cần tạo access token mới
+                newRefreshToken = storedToken.RefreshToken;
+                newExpiresAt = storedToken.ExpiresAt;
+
+                // Không hủy token cũ, chỉ cập nhật accessToken mới
+                storedToken.AccessToken = newAccessToken;
+                storedToken.UpdatedAt = DateTime.UtcNow;
+                await _tokenRepository.UpdateAsync(storedToken);
+
+                tokenResponse = new TokenResponse
+                {
+                    AccessToken = newAccessToken,
+                    RefreshToken = newRefreshToken,
+                    ExpiresIn = (long)(newExpiresAt - DateTime.UtcNow).TotalSeconds
+                };
+
+                _logger.LogInformation("Access token refreshed successfully");
+            }
+            else
+            {
+                // Refresh token đã hết hạn, tạo mới cả access token và refresh token
+                newRefreshToken = _jwtHelper.CreateRefreshToken();
+                newExpiresAt = _jwtHelper.GetRefreshTokenExpiryTime();
+
+                // Cập nhật token trong cơ sở dữ liệu
+                storedToken.AccessToken = newAccessToken;
+                storedToken.RefreshToken = newRefreshToken;
+                storedToken.ExpiresAt = newExpiresAt;
+                storedToken.UpdatedAt = DateTime.UtcNow;
+                storedToken.IsRevoked = false;
+                await _tokenRepository.UpdateAsync(storedToken);
+
+                tokenResponse = new TokenResponse
+                {
+                    AccessToken = newAccessToken,
+                    RefreshToken = newRefreshToken,
+                    ExpiresIn = (long)(newExpiresAt - DateTime.UtcNow).TotalSeconds
+                };
+
+                _logger.LogInformation("Access token and refresh token refreshed successfully");
+            }
+
+            return tokenResponse;
         }
     }
 }
