@@ -10,7 +10,6 @@ namespace FoodFlowSystem.Entities.Token
         public bool IsRevoked { get; set; }
         public int UserId { get; set; }
         
-        // Navigation property
         public virtual Entities.User.UserEntity User { get; set; }
     }
 } 

@@ -7,7 +7,7 @@ namespace FoodFlowSystem.Entities.Token
     {
         public void Configure(EntityTypeBuilder<TokenEntity> builder)
         {
-            builder.ToTable("Tokens");
+            builder.ToTable("Token");
             builder.HasKey(x => x.ID);
             builder.Property(x => x.ID).ValueGeneratedOnAdd();
 
