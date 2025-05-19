@@ -1,3 +1,4 @@
+using FoodFlowSystem.Entities.User;
 using System;
 
 namespace FoodFlowSystem.Entities.Token
@@ -7,9 +8,7 @@ namespace FoodFlowSystem.Entities.Token
         public string AccessToken { get; set; }
         public string RefreshToken { get; set; }
         public DateTime ExpiresAt { get; set; }
-        public bool IsRevoked { get; set; }
-        public int UserId { get; set; }
-        
-        public virtual Entities.User.UserEntity User { get; set; }
+        public int UserID { get; set; }
+        public UserEntity User { get; set; }
     }
 } 

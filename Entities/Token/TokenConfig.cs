@@ -7,7 +7,7 @@ namespace FoodFlowSystem.Entities.Token
     {
         public void Configure(EntityTypeBuilder<TokenEntity> builder)
         {
-            builder.ToTable("Token");
+            builder.ToTable("Tokens");
             builder.HasKey(x => x.ID);
             builder.Property(x => x.ID).ValueGeneratedOnAdd();
 
@@ -29,14 +29,13 @@ namespace FoodFlowSystem.Entities.Token
                 .HasColumnType("datetime")
                 .IsRequired();
 
-            builder.Property(x => x.IsRevoked)
-                .HasDefaultValue(false)
+            builder.Property(x => x.UserID)
                 .IsRequired();
 
-            builder.HasOne(t => t.User)
-                .WithMany()
-                .HasForeignKey(t => t.UserId)
+            builder.HasOne(x => x.User)
+                .WithMany(x => x.Tokens)
+                .HasForeignKey(x => x.UserID)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }
-} 
+}

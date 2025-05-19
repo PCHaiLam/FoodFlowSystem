@@ -34,14 +34,6 @@ namespace FoodFlowSystem.Controllers
             return Ok();
         }
 
-        [HttpPost("register")]
-        [AllowAnonymous]
-        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
-        {
-            await _authService.RegisterAsync(request);
-            return Ok();
-        }
-
         [HttpPost("admin-login")]
         [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
@@ -55,8 +47,16 @@ namespace FoodFlowSystem.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
         {
-            var result = await _authService.RefreshTokenAsync(request);
-            return Ok(result);
+            await _authService.RefreshTokenAsync(request);
+            return Ok();
+        }
+
+        [HttpPost("logout")]
+        [AllowAnonymous]
+        public async Task<IActionResult> LogOut([FromBody] RefreshTokenRequest request)
+        {
+            await _authService.LogoutAsync(request);
+            return Ok();
         }
     }
 }

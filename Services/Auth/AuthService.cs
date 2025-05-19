@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
+using Azure.Core;
 using FluentValidation;
 using FoodFlowSystem.DTOs;
 using FoodFlowSystem.DTOs.Requests.Auth;
-using FoodFlowSystem.DTOs.Responses.Auth;
 using FoodFlowSystem.Entities.OAuth;
 using FoodFlowSystem.Entities.Token;
 using FoodFlowSystem.Entities.User;
@@ -112,8 +112,6 @@ namespace FoodFlowSystem.Services.Auth
                     _logger.LogInformation("Register user with google account success");
                 }
 
-                user = await _userRepository.IsExistUserEmailAsync(payload.Email);
-
                 var claims = new[]
                 {
                     new Claim("userId", user.ID.ToString()),
@@ -129,15 +127,12 @@ namespace FoodFlowSystem.Services.Auth
                 var refreshToken = _jwtHelper.CreateRefreshToken();
                 var expiresAt = _jwtHelper.GetRefreshTokenExpiryTime();
 
-                // Lưu token vào database
                 var tokenEntity = new TokenEntity
                 {
                     AccessToken = accessToken,
                     RefreshToken = refreshToken,
                     ExpiresAt = expiresAt,
-                    UserId = user.ID,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
+                    UserID = user.ID
                 };
 
                 await _tokenRepository.AddAsync(tokenEntity);
@@ -150,10 +145,12 @@ namespace FoodFlowSystem.Services.Auth
             }
             catch (InvalidJwtException ex)
             {
+                _logger.LogError(ex, "Invalid JWT token");
                 throw new ApiException("Token Google không hợp lệ hoặc đã hết hạn", 401);
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error during Google login");
                 throw new ApiException("Không thể xác thực với Google. Vui lòng thử lại sau", 500);
             }
         }
@@ -198,15 +195,12 @@ namespace FoodFlowSystem.Services.Auth
             var refreshToken = _jwtHelper.CreateRefreshToken();
             var expiresAt = _jwtHelper.GetRefreshTokenExpiryTime();
 
-            // Lưu token vào database
             var tokenEntity = new TokenEntity
             {
                 AccessToken = accessToken,
                 RefreshToken = refreshToken,
                 ExpiresAt = expiresAt,
-                UserId = user.ID,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                UserID = user.ID,
             };
 
             await _tokenRepository.AddAsync(tokenEntity);
@@ -218,51 +212,20 @@ namespace FoodFlowSystem.Services.Auth
             _logger.LogInformation("Login success");
         }
 
-        public async Task RegisterAsync(RegisterRequest request)
+        public async Task RefreshTokenAsync(RefreshTokenRequest request)
         {
-            var validationResult = _registerValidator.Validate(request);
-            if (!validationResult.IsValid)
-            {
-                var errors = validationResult.Errors.Select(e => new
-                {
-                    Field = e.PropertyName,
-                    Message = e.ErrorMessage
-                });
-                throw new ApiException("Invalid input", 400, errors);
-            }
-
-            var emailExist = await _userRepository.IsExistUserEmailAsync(request.Email);
-            if (emailExist != null)
-            {
-                throw new ApiException("Email already exists", 400);
-            }
-
-            var newUser = _mapper.Map<UserEntity>(request);
-
-            newUser.HashPassword = HashPassword.Hash(request.Password);
-            newUser.RoleID = 2;
-
-            await _authRepository.AddAsync(newUser);
-            _logger.LogInformation("Register success");
-        }
-
-        public async Task<TokenResponse> RefreshTokenAsync(RefreshTokenRequest request)
-        {
-            // Kiểm tra refresh token có tồn tại không
             var storedToken = await _tokenRepository.GetByRefreshTokenAsync(request.RefreshToken);
             if (storedToken == null)
             {
                 throw new ApiException("Refresh token không hợp lệ", 401);
             }
 
-            // Lấy thông tin người dùng
-            var user = await _userRepository.GetByIdAsync(storedToken.UserId);
+            var user = await _userRepository.GetByIdAsync(storedToken.UserID);
             if (user == null)
             {
                 throw new ApiException("Không tìm thấy người dùng", 404);
             }
 
-            // Tạo claims cho access token mới
             var claims = new[]
             {
                 new Claim("userId", user.ID.ToString()),
@@ -272,58 +235,49 @@ namespace FoodFlowSystem.Services.Auth
                 new Claim(ClaimTypes.Role, user.RoleID.ToString()),
             };
 
-            // Tạo token mới
             var newAccessToken = _jwtHelper.GenerateToken(claims);
             string newRefreshToken;
             DateTime newExpiresAt;
-            TokenResponse tokenResponse;
 
-            // Kiểm tra refresh token còn hạn hay không
             if (storedToken.ExpiresAt > DateTime.UtcNow)
             {
-                // Refresh token còn hạn, chỉ cần tạo access token mới
                 newRefreshToken = storedToken.RefreshToken;
-                newExpiresAt = storedToken.ExpiresAt;
-
-                // Không hủy token cũ, chỉ cập nhật accessToken mới
                 storedToken.AccessToken = newAccessToken;
-                storedToken.UpdatedAt = DateTime.UtcNow;
-                await _tokenRepository.UpdateAsync(storedToken);
 
-                tokenResponse = new TokenResponse
-                {
-                    AccessToken = newAccessToken,
-                    RefreshToken = newRefreshToken,
-                    ExpiresIn = (long)(newExpiresAt - DateTime.UtcNow).TotalSeconds
-                };
+                await _tokenRepository.UpdateAsync(storedToken);
 
                 _logger.LogInformation("Access token refreshed successfully");
             }
             else
             {
-                // Refresh token đã hết hạn, tạo mới cả access token và refresh token
                 newRefreshToken = _jwtHelper.CreateRefreshToken();
                 newExpiresAt = _jwtHelper.GetRefreshTokenExpiryTime();
 
-                // Cập nhật token trong cơ sở dữ liệu
                 storedToken.AccessToken = newAccessToken;
                 storedToken.RefreshToken = newRefreshToken;
                 storedToken.ExpiresAt = newExpiresAt;
-                storedToken.UpdatedAt = DateTime.UtcNow;
-                storedToken.IsRevoked = false;
                 await _tokenRepository.UpdateAsync(storedToken);
-
-                tokenResponse = new TokenResponse
-                {
-                    AccessToken = newAccessToken,
-                    RefreshToken = newRefreshToken,
-                    ExpiresIn = (long)(newExpiresAt - DateTime.UtcNow).TotalSeconds
-                };
 
                 _logger.LogInformation("Access token and refresh token refreshed successfully");
             }
 
-            return tokenResponse;
+            var responseHeaders = _httpContextAccessor.HttpContext.Response.Headers;
+            responseHeaders.Append("auth_token", $"Bearer {newAccessToken}");
+            responseHeaders.Append("refresh_token", newRefreshToken);
+        }
+
+        public async Task LogoutAsync(RefreshTokenRequest request)
+        {
+            var token = await _tokenRepository.GetByRefreshTokenAsync(request.RefreshToken);
+            if (token != null)
+            {
+                await _tokenRepository.DeleteByRefreshTokenAsync(request.RefreshToken);
+                _logger.LogInformation("Logout success");
+            }
+            else
+            {
+                throw new ApiException("Token không hợp lệ", 401);
+            }
         }
     }
 }

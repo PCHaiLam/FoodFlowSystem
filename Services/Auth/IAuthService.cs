@@ -1,6 +1,5 @@
 ﻿using FoodFlowSystem.DTOs.Requests.Auth;
 using FoodFlowSystem.DTOs.Responses;
-using FoodFlowSystem.DTOs.Responses.Auth;
 
 namespace FoodFlowSystem.Services.Auth
 {
@@ -8,7 +7,7 @@ namespace FoodFlowSystem.Services.Auth
     {
         Task LoginWithGoogleAsync(GoogleLoginRequest request);
         Task LoginAsync(LoginRequest request);
-        Task RegisterAsync(RegisterRequest request);
-        Task<TokenResponse> RefreshTokenAsync(RefreshTokenRequest request);
+        Task RefreshTokenAsync(RefreshTokenRequest request);
+        Task LogoutAsync(RefreshTokenRequest request);
     }
 }
