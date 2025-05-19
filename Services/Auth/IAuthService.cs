@@ -7,6 +7,7 @@ namespace FoodFlowSystem.Services.Auth
     {
         Task LoginWithGoogleAsync(GoogleLoginRequest request);
         Task LoginAsync(LoginRequest request);
-        Task RegisterAsync(RegisterRequest request);
+        Task RefreshTokenAsync(RefreshTokenRequest request);
+        Task LogoutAsync(RefreshTokenRequest request);
     }
 }

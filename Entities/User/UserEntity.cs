@@ -3,6 +3,7 @@ using FoodFlowSystem.Entities.Feedback;
 using FoodFlowSystem.Entities.OAuth;
 using FoodFlowSystem.Entities.Order;
 using FoodFlowSystem.Entities.Role;
+using FoodFlowSystem.Entities.Token;
 using FoodFlowSystem.Entities.UserRecommendations;
 
 namespace FoodFlowSystem.Entities.User
@@ -22,5 +23,6 @@ namespace FoodFlowSystem.Entities.User
         public ICollection<FeedbackEntity> Feedbacks { get; set; }
         public ICollection<OAuthEntity> OAuths { get; set; }
         public ICollection<UserRecommendationsEntity> UserRecommendations { get; set; }
+        public ICollection<TokenEntity> Tokens { get; set; }
     }
 }

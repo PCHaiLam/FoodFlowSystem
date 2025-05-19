@@ -4,6 +4,7 @@ using FoodFlowSystem.Data.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FoodFlowSystem.Migrations
 {
     [DbContext(typeof(MssqlDbContext))]
-    partial class MssqlDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250514200540_u_token")]
+    partial class u_token
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -549,14 +552,14 @@ namespace FoodFlowSystem.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime");
 
-                    b.Property<int>("UserID")
+                    b.Property<int>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("ID");
 
-                    b.HasIndex("UserID");
+                    b.HasIndex("UserId");
 
-                    b.ToTable("Tokens", (string)null);
+                    b.ToTable("Token", (string)null);
                 });
 
             modelBuilder.Entity("FoodFlowSystem.Entities.User.UserEntity", b =>
@@ -763,8 +766,8 @@ namespace FoodFlowSystem.Migrations
             modelBuilder.Entity("FoodFlowSystem.Entities.Token.TokenEntity", b =>
                 {
                     b.HasOne("FoodFlowSystem.Entities.User.UserEntity", "User")
-                        .WithMany("Tokens")
-                        .HasForeignKey("UserID")
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -848,8 +851,6 @@ namespace FoodFlowSystem.Migrations
                     b.Navigation("OAuths");
 
                     b.Navigation("Orders");
-
-                    b.Navigation("Tokens");
 
                     b.Navigation("UserRecommendations");
                 });

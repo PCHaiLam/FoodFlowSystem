@@ -20,6 +20,7 @@ using FoodFlowSystem.Repositories.Product;
 using FoodFlowSystem.Repositories.ProductVersion;
 using FoodFlowSystem.Repositories.Statistic;
 using FoodFlowSystem.Repositories.Table;
+using FoodFlowSystem.Repositories.Token;
 using FoodFlowSystem.Repositories.User;
 using FoodFlowSystem.Services.Auth;
 using FoodFlowSystem.Services.Category;
@@ -145,6 +146,7 @@ builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
 builder.Services.AddScoped<IEmailTemplatesRepository, EmailTemplatesRepository>();
 builder.Services.AddScoped<IStatisticRepository, StatisticRepository>();
+builder.Services.AddScoped<ITokenRepository, TokenRepository>();
 
 // Dependency Injection - Services
 builder.Services.AddScoped<IAuthService, AuthService>();
