@@ -10,8 +10,8 @@ using FoodFlowSystem.Entities.Payment;
 using FoodFlowSystem.Entities.Product;
 using FoodFlowSystem.Entities.ProductVersions;
 using FoodFlowSystem.Entities.Role;
-using FoodFlowSystem.Entities.SearchLogs;
 using FoodFlowSystem.Entities.Table;
+using FoodFlowSystem.Entities.Token;
 using FoodFlowSystem.Entities.User;
 using FoodFlowSystem.Entities.UserRecommendations;
 using FoodFlowSystem.Interceptors;
@@ -46,8 +46,8 @@ namespace FoodFlowSystem.Data.DbContexts
         public DbSet<OAuthEntity> OAuths { get; set; }
         public DbSet<ProductVersionEntity> ProductVersions { get; set; }
         public DbSet<EmailTemplatesEntity> EmailTemplates { get; set; }
-        public DbSet<SearchLogsEntity> SearchLogs { get; set; }
         public DbSet<UserRecommendationsEntity> UserRecommendations { get; set; }
+        public DbSet<TokenEntity> Tokens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -67,8 +67,8 @@ namespace FoodFlowSystem.Data.DbContexts
             modelBuilder.ApplyConfiguration(new OAuthConfig());
             modelBuilder.ApplyConfiguration(new ProductVersionConfig());
             modelBuilder.ApplyConfiguration(new EmailTemplatesConfig());
-            modelBuilder.ApplyConfiguration(new SearchLogsConfig());
             modelBuilder.ApplyConfiguration(new UserRecommendationsConfig());
+            modelBuilder.ApplyConfiguration(new TokenConfig());
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
