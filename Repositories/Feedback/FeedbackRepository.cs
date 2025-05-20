@@ -26,6 +26,7 @@ namespace FoodFlowSystem.Repositories.Feedback
                 .Select(g => new ProductRatedResponse
                 {
                     ProductId = g.Key,
+                    ProductName = g.Select(x => x.Product.Name).FirstOrDefault(),
                     AverageRated = g.Average(x => x.Rating),
                     TotalFeedbacks = g.Count()
                 })

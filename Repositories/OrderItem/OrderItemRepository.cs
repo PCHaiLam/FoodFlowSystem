@@ -1,5 +1,6 @@
 ﻿using FoodFlowSystem.Data.DbContexts;
 using FoodFlowSystem.DTOs.Responses.Recommendations;
+using FoodFlowSystem.DTOs.Responses.Statistic;
 using FoodFlowSystem.Entities.OrderItem;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,6 +10,27 @@ namespace FoodFlowSystem.Repositories.OrderItem
     {
         public OrderItemRepository(MssqlDbContext dbContext) : base(dbContext)
         {
+        }
+
+        public async Task<ICollection<ProductStatisticResponse>> GetByArangeDateAsync(DateTime startDate, DateTime endDate)
+        {
+            var listOrderItems = await _dbContext.OrderItems
+                .Include(x => x.Product)
+                .Where(x => x.CreatedAt.Date >= startDate.Date && x.CreatedAt.Date <= endDate.Date)
+                .ToListAsync();
+
+            var result = listOrderItems
+                .GroupBy(x => x.ProductID)
+                .Select(g => new ProductStatisticResponse
+                {
+                    ProductId = g.Key,
+                    ProductName = g.FirstOrDefault().Product.Name,
+                    QuantitySold = g.Sum(x => x.Quantity),
+                })
+                .OrderByDescending(x => x.QuantitySold)
+                .ToList();
+
+            return result;
         }
 
         public async Task<ICollection<OrderItemEntity>> GetByOrderId(int id)
