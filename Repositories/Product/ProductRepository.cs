@@ -85,5 +85,19 @@ namespace FoodFlowSystem.Repositories.Product
                         .Where(x => x.ProductVersions.Any(x => x.IsActive == true))
                         .CountAsync();
         }
+
+        public async Task<decimal> GetProductPriceAsync(int productId)
+        {
+            var product = await _dbContext.Products
+                        .Include(x => x.ProductVersions)
+                        .FirstOrDefaultAsync(x => x.ID == productId);
+
+            if (product != null && product.ProductVersions.Any())
+            {
+                return product.ProductVersions.FirstOrDefault().Price;
+            }
+
+            return 0;
+        }
     }
 }

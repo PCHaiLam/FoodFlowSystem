@@ -30,6 +30,7 @@ using FoodFlowSystem.Services.Payment;
 using FoodFlowSystem.Services.Product;
 using FoodFlowSystem.Services.Recommendations;
 using FoodFlowSystem.Services.SendMail;
+using FoodFlowSystem.Services.Statistic;
 using FoodFlowSystem.Services.Table;
 using FoodFlowSystem.Services.UploadImage;
 using FoodFlowSystem.Services.User;
@@ -159,6 +160,7 @@ builder.Services.AddScoped<IVNPayService, VNPayService>();
 builder.Services.AddScoped<ISendMailService, SendMailService>();
 builder.Services.AddScoped<IRecommendationsService, RecommendationsService>();
 builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
+builder.Services.AddScoped<IStatisticService, StatisticService>();
 
 // JWT 
 builder.Services.AddScoped<JwtHelper>();
