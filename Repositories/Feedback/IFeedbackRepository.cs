@@ -7,11 +7,13 @@ namespace FoodFlowSystem.Repositories.Feedback
 {
     public interface IFeedbackRepository : IBaseRepository<FeedbackEntity>
     {
+        Task<ICollection<FeedbackEntity>> GetFeedbacksAsync(int top);
         Task AddListFeedbacksAsync(ICollection<FeedbackEntity> feedbacks);
         Task<ProductRatedResponse> GetAverageRateAndTotalFeedbacksByProductIdAsync(int productId);
         Task<ICollection<FeedbackEntity>> GetByUserIdAsync(int id);
         Task<ICollection<FeedbackEntity>> GetByProductIdAsync(int id);
         Task<ICollection<PendingFeedbackResponse>> GetPendingFeedbackByUserIdAsync(int userId);
         Task<ICollection<ProductRecommendations>> GetTopRatedAsync();
+        Task<ICollection<FeedbackEntity>> GetByArangeDateAsync(DateTime startDate, DateTime endDate);
     }
 }

@@ -16,7 +16,7 @@ namespace FoodFlowSystem.Repositories.OrderItem
         {
             var listOrderItems = await _dbContext.OrderItems
                 .Include(x => x.Product)
-                .Where(x => x.CreatedAt.Date >= startDate.Date && x.CreatedAt.Date <= endDate.Date)
+                .Where(x => x.CreatedAt >= startDate && x.CreatedAt <= endDate)
                 .ToListAsync();
 
             var result = listOrderItems
