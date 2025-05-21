@@ -17,9 +17,9 @@ namespace FoodFlowSystem.Controllers
         }
 
         [HttpGet("get-all")]
-        public async Task<IActionResult> GetFeedbacks()
+        public async Task<IActionResult> GetFeedbacks([FromQuery] int top = 0)
         {
-            var feedbacks = await _feedbackService.GetAllFeedbacksAsync();
+            var feedbacks = await _feedbackService.GetAllFeedbacksAsync(top);
             return Ok(feedbacks);
         }
 

@@ -19,5 +19,14 @@ namespace FoodFlowSystem.Repositories.User
         {
             return _dbContext.Users.FirstOrDefaultAsync(x => x.Email == input);
         }
+
+        public async Task<ICollection<UserEntity>> GetByArangeDateAsync(DateTime startDate, DateTime endDate)
+        {
+            var result = await _dbContext.Users
+                .Where(x => x.CreatedAt >= startDate && x.CreatedAt <= endDate)
+                .ToListAsync();
+
+            return result;
+        }
     }
 }

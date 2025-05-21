@@ -84,10 +84,17 @@ namespace FoodFlowSystem.Services.Feedback
             return result;
         }
 
-        public async Task<ICollection<FeedbackResponse>> GetAllFeedbacksAsync()
+        public async Task<ICollection<FeedbackResponse>> GetAllFeedbacksAsync(int top)
         {
-            var list = await _feedbackRepository.GetAllAsync();
+            var list = await _feedbackRepository.GetFeedbacksAsync(top);
+
             var result = _mapper.Map<ICollection<FeedbackResponse>>(list);
+
+            foreach (var feedback in result)
+            {
+                feedback.ProductName = list.FirstOrDefault(x => x.ProductID == feedback.ProductId)?.Product.Name;
+                feedback.Name = list.FirstOrDefault(x => x.UserID == feedback.UserId)?.User.FirstName;
+            }
 
             _logger.LogInformation("Feedbacks listed successfully");
 

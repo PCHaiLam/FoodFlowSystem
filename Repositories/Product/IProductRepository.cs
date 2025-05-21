@@ -1,4 +1,5 @@
-﻿using FoodFlowSystem.Entities.Product;
+﻿using FoodFlowSystem.Entities.Invoice;
+using FoodFlowSystem.Entities.Product;
 
 namespace FoodFlowSystem.Repositories.Product
 {
@@ -9,5 +10,6 @@ namespace FoodFlowSystem.Repositories.Product
         Task<decimal> GetProductPriceAsync(int productId);
         Task<ProductEntity> IsExistProductNameAsync(string input);
         Task<IEnumerable<ProductEntity>> GetAllActiceAsync(string category, decimal minPrice, decimal maxPrice, string sort);
+        //Task<ICollection<ProductEntity>> GetByArangeDate(DateTime startDate, DateTime endDate);
     }
 }

@@ -14,7 +14,7 @@ namespace FoodFlowSystem.Repositories.Invoice
         {
             var result = await _dbContext.Invoices
                 .Include(x => x.Order)
-                .Where(x => x.CreatedAt.Date >= startDate.Date && x.CreatedAt.Date <= endDate.Date)
+                .Where(x => x.Order.UpdatedAt >= startDate && x.Order.UpdatedAt <= endDate)
                 .ToListAsync();
 
             return result;

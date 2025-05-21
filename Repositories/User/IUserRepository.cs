@@ -6,5 +6,6 @@ namespace FoodFlowSystem.Repositories.User
     {
         Task<UserEntity> IsExistUserEmailAsync(string input);
         Task<IEnumerable<UserEntity>> GetByNameAsync(string name);
+        Task<ICollection<UserEntity>> GetByArangeDateAsync(DateTime startDate, DateTime endDate);
     }
 }

@@ -35,6 +35,17 @@ namespace FoodFlowSystem.Repositories.Feedback
             return data;
         }
 
+        public async Task<ICollection<FeedbackEntity>> GetByArangeDateAsync(DateTime startDate, DateTime endDate)
+        {
+            var result = await _dbContext.Feedbacks
+                .Include(x => x.Product)
+                .Include(x => x.User)
+                .Where(x => x.CreatedAt >= startDate && x.CreatedAt <= endDate)
+                .ToListAsync();
+
+            return result;
+        }
+
         public async Task<ICollection<FeedbackEntity>> GetByProductIdAsync(int id)
         {
             return await _dbContext.Feedbacks.Where(x => x.ProductID == id).ToListAsync();
@@ -43,6 +54,23 @@ namespace FoodFlowSystem.Repositories.Feedback
         public async Task<ICollection<FeedbackEntity>> GetByUserIdAsync(int id)
         {
             return await _dbContext.Feedbacks.Where(x => x.UserID == id).ToListAsync();
+        }
+
+        public async Task<ICollection<FeedbackEntity>> GetFeedbacksAsync(int top)
+        {
+            if (top == 0)
+            {
+                return await _dbContext.Feedbacks.ToListAsync();
+            }
+
+            var result = await _dbContext.Feedbacks
+                .Include(x => x.Product)
+                .Include(x => x.User)
+                .OrderByDescending(x => x.CreatedAt)
+                .Take(top)
+                .ToListAsync();
+
+            return result;
         }
 
         public async Task<ICollection<PendingFeedbackResponse>> GetPendingFeedbackByUserIdAsync(int userId)
