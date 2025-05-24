@@ -42,6 +42,7 @@ namespace FoodFlowSystem.Repositories.Product
         public async Task<IEnumerable<ProductEntity>> GetAllActiceAsync(string category, decimal minPrice, decimal maxPrice, string sort)
         {
             var query = _dbContext.Products
+                        .Include(x => x.Category)
                         .Include(x => x.ProductVersions)
                         .Where(x => x.ProductVersions.Any(x => x.IsActive == true));
 

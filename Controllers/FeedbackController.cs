@@ -17,9 +17,16 @@ namespace FoodFlowSystem.Controllers
         }
 
         [HttpGet("get-all")]
-        public async Task<IActionResult> GetFeedbacks([FromQuery] int top = 0)
+        public async Task<IActionResult> GetFeedbacks([FromQuery] int page = 1, [FromQuery] int size = 0)
         {
-            var feedbacks = await _feedbackService.GetAllFeedbacksAsync(top);
+            var feedbacks = await _feedbackService.GetAllFeedbacksAsync(page, size);
+            return Ok(feedbacks);
+        }
+
+        [HttpGet("get-all-group-by-product")]
+        public async Task<IActionResult> GetFeedbacksGroupByProductId()
+        {
+            var feedbacks = await _feedbackService.GetAllFeedbacksGroupByProductIdAsync();
             return Ok(feedbacks);
         }
 
@@ -30,7 +37,7 @@ namespace FoodFlowSystem.Controllers
             return Ok(feedback);
         }
 
-        [HttpGet("product")]
+        [HttpGet("product-id")]
         public async Task<IActionResult> GetFeedbacksByProductId([FromQuery] int id)
         {
             var feedbacks = await _feedbackService.GetFeedbacksByProductIdAsync(id);

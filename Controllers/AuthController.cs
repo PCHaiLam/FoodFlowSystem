@@ -16,12 +16,10 @@ namespace FoodFlowSystem.Controllers
         private readonly IHttpContextAccessor _httpContextAccessor;
         public AuthController(
             IAuthService authService,
-            IUserService userService,
             IHttpContextAccessor httpContextAccessor
             )
         {
             _authService = authService;
-            _userService = userService;
             _httpContextAccessor = httpContextAccessor;
         }
 

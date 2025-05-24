@@ -40,17 +40,17 @@ namespace FoodFlowSystem.Services.Recommendations
 
             foreach (var item in data)
             {
-                var feedback = await _feedbackRepository.GetAverageRateAndTotalFeedbacksByProductIdAsync(item.ProductId);
+                var feedback = await _feedbackRepository.GetAverageRateAndTotalFeedbacksByProductIdAsync(item.Id);
                 result.Add(new ProductRecommendations
                 {
-                    ProductId = item.ProductId,
-                    ProductName = item.ProductName,
+                    Id = item.Id,
+                    Name = item.Name,
                     ImageUrl = item.ImageUrl,
                     TotalOrders = item.TotalOrders,
                     TotalSales = item.TotalSales,
                     Price = item.Price,
                     CategoryName = item.CategoryName,
-                    AverageRate = feedback?.AverageRated ?? 0,
+                    AverageRated = feedback?.AverageRated ?? 0,
                     TotalFeedbacks = feedback?.TotalFeedbacks ?? 0
                 });
             }
@@ -69,19 +69,19 @@ namespace FoodFlowSystem.Services.Recommendations
 
             foreach (var item in data)
             {
-                if (!productIds.Contains(item.ProductId))
+                if (!productIds.Contains(item.Id))
                 {
-                    var feedback = await _feedbackRepository.GetAverageRateAndTotalFeedbacksByProductIdAsync(item.ProductId);
+                    var feedback = await _feedbackRepository.GetAverageRateAndTotalFeedbacksByProductIdAsync(item.Id);
                     result.Add(new ProductRecommendations
                     {
-                        ProductId = item.ProductId,
-                        ProductName = item.ProductName,
+                        Id = item.Id,
+                        Name = item.Name,
                         ImageUrl = item.ImageUrl,
                         TotalOrders = item.TotalOrders,
                         TotalSales = item.TotalSales,
                         Price = item.Price,
                         CategoryName = item.CategoryName,
-                        AverageRate = feedback?.AverageRated ?? 0,
+                        AverageRated = feedback?.AverageRated ?? 0,
                         TotalFeedbacks = feedback?.TotalFeedbacks ?? 0
                     });
                 }
@@ -97,14 +97,14 @@ namespace FoodFlowSystem.Services.Recommendations
 
             foreach (var item in data)
             {
-                var orderItem = await _orderItemRepository.GetTotalOrdersAndTotalSalesByProductIdAsync(item.ProductId);
+                var orderItem = await _orderItemRepository.GetTotalOrdersAndTotalSalesByProductIdAsync(item.Id);
 
                 result.Add(new ProductRecommendations
                 {
-                    ProductId = item.ProductId,
-                    ProductName = item.ProductName,
+                    Id = item.Id,
+                    Name = item.Name,
                     ImageUrl = item.ImageUrl,
-                    AverageRate = item.AverageRate,
+                    AverageRated = item.AverageRated,
                     TotalFeedbacks = item.TotalFeedbacks,
                     TotalOrders = orderItem?.TotalOrders ?? 0,
                     TotalSales = orderItem?.TotalSales ?? 0,

@@ -120,8 +120,8 @@ namespace FoodFlowSystem.Services.Product
 
             foreach (var product in result)
             {
-                var lastProductVersion = await _productVersionRepository.GetLastProductVersionByProductIdAsync(product.ID);
-                var feedback = await _feedbackRepository.GetAverageRateAndTotalFeedbacksByProductIdAsync(product.ID);
+                var lastProductVersion = await _productVersionRepository.GetLastProductVersionByProductIdAsync(product.Id);
+                var feedback = await _feedbackRepository.GetAverageRateAndTotalFeedbacksByProductIdAsync(product.Id);
                 product.Price = lastProductVersion.Price;
                 product.AverageRated = feedback?.AverageRated ?? 0;
             }
@@ -177,8 +177,8 @@ namespace FoodFlowSystem.Services.Product
 
             foreach (var product in result)
             {
-                var lastProductVersion = await _productVersionRepository.GetLastProductVersionByProductIdAsync(product.ID);
-                var feedback = await _feedbackRepository.GetAverageRateAndTotalFeedbacksByProductIdAsync(product.ID);
+                var lastProductVersion = await _productVersionRepository.GetLastProductVersionByProductIdAsync(product.Id);
+                var feedback = await _feedbackRepository.GetAverageRateAndTotalFeedbacksByProductIdAsync(product.Id);
                 product.Price = lastProductVersion.Price;
                 product.AverageRated = feedback?.AverageRated ?? 0;
             }
