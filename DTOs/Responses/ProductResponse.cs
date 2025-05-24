@@ -4,7 +4,7 @@ namespace FoodFlowSystem.DTOs.Responses
 {
     public class ProductResponse
     {
-        public int ID { get; set; }
+        public int Id { get; set; }
         public string Name { get; set; }
         public decimal Price { get; set; }
         public int Quantity { get; set; }
@@ -12,8 +12,7 @@ namespace FoodFlowSystem.DTOs.Responses
         public string Status { get; set; }
         public string ImageUrl { get; set; }
         public double AverageRated { get; set; }
-        public int CategoryID { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public CategoryResponse Category { get; set; }
         public ICollection<FeedbackResponse> Feedbacks { get; set; }
     }
 }

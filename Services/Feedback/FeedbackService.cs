@@ -84,16 +84,15 @@ namespace FoodFlowSystem.Services.Feedback
             return result;
         }
 
-        public async Task<ICollection<FeedbackResponse>> GetAllFeedbacksAsync(int top)
+        public async Task<ICollection<FeedbackResponse>> GetAllFeedbacksAsync(int page, int size)
         {
-            var list = await _feedbackRepository.GetFeedbacksAsync(top);
+            var list = await _feedbackRepository.GetFeedbacksAsync(page, size);
 
             var result = _mapper.Map<ICollection<FeedbackResponse>>(list);
 
             foreach (var feedback in result)
             {
                 feedback.ProductName = list.FirstOrDefault(x => x.ProductID == feedback.ProductId)?.Product.Name;
-                feedback.Name = list.FirstOrDefault(x => x.UserID == feedback.UserId)?.User.FirstName;
             }
 
             _logger.LogInformation("Feedbacks listed successfully");
@@ -186,6 +185,26 @@ namespace FoodFlowSystem.Services.Feedback
             await _feedbackRepository.AddListFeedbacksAsync(feedbacks);
 
             _logger.LogInformation("Feedbacks created successfully");
+        }
+
+        public async Task<ICollection<FeedbackGroupByProductIdResponse>> GetAllFeedbacksGroupByProductIdAsync()
+        {
+            var feedbacks = await _feedbackRepository.GetFeedbacksAsync(0,0);
+
+            var groupedFeedbacks = feedbacks
+                .GroupBy(f => f.ProductID)
+                .Select(g => new FeedbackGroupByProductIdResponse
+                {
+                    ProductId = g.Key,
+                    ProductName = g.First().Product.Name,
+                    ProductImage = g.First().Product.ImageUrl,
+                    TotalFeedbacks = g.Count(),
+                    AverageRating = g.Average(f => f.Rating),
+                    Feedbacks = _mapper.Map<ICollection<FeedbackResponse>>(g.ToList())
+                })
+                .ToList();
+
+            return groupedFeedbacks;
         }
     }
 }

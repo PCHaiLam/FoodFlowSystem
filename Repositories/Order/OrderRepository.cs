@@ -39,14 +39,15 @@ namespace FoodFlowSystem.Repositories.Order
                 .GroupBy(oi => oi.ProductID)
                 .Select(g => new ProductRecommendations
                 {
-                    ProductId = g.Key,
-                    ProductName = g.First().Product.Name,
+                    Id = g.Key,
+                    Name = g.First().Product.Name,
                     ImageUrl = g.First().Product.ImageUrl,
                     TotalOrders = g.Select(oi => oi.OrderID).Distinct().Count(),
                     TotalSales = g.Sum(oi => oi.Quantity),
                     Price = g.First().Product.ProductVersions.OrderByDescending(pv => pv.ID).FirstOrDefault().Price,
                     CategoryName = g.First().Product.Category.Name
-                });
+                })
+                .Take(10);
 
             return await data.ToListAsync();
         }

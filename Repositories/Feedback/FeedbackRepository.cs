@@ -48,7 +48,8 @@ namespace FoodFlowSystem.Repositories.Feedback
 
         public async Task<ICollection<FeedbackEntity>> GetByProductIdAsync(int id)
         {
-            return await _dbContext.Feedbacks.Where(x => x.ProductID == id).ToListAsync();
+            var result = await _dbContext.Feedbacks.Include(x => x.User).Where(x => x.ProductID == id).ToListAsync();
+            return result;
         }
 
         public async Task<ICollection<FeedbackEntity>> GetByUserIdAsync(int id)
@@ -56,18 +57,24 @@ namespace FoodFlowSystem.Repositories.Feedback
             return await _dbContext.Feedbacks.Where(x => x.UserID == id).ToListAsync();
         }
 
-        public async Task<ICollection<FeedbackEntity>> GetFeedbacksAsync(int top)
+        public async Task<ICollection<FeedbackEntity>> GetFeedbacksAsync(int page, int size)
         {
-            if (top == 0)
+            if (size == 0)
             {
-                return await _dbContext.Feedbacks.ToListAsync();
+                var data = await _dbContext.Feedbacks
+                    .Include(x => x.Product)
+                    .Include(x => x.User)
+                    .OrderByDescending(x => x.CreatedAt)
+                    .ToListAsync();
+                return data;
             }
 
             var result = await _dbContext.Feedbacks
                 .Include(x => x.Product)
                 .Include(x => x.User)
                 .OrderByDescending(x => x.CreatedAt)
-                .Take(top)
+                .Take(size)
+                .Skip((page - 1) * size)
                 .ToListAsync();
 
             return result;
@@ -117,15 +124,16 @@ namespace FoodFlowSystem.Repositories.Feedback
                 .GroupBy(x => x.ProductID)
                 .Select(g => new ProductRecommendations
                 {
-                    ProductId = g.Key,
-                    ProductName = g.Select(x => x.Product.Name).FirstOrDefault(),
+                    Id = g.Key,
+                    Name = g.Select(x => x.Product.Name).FirstOrDefault(),
                     ImageUrl = g.Select(x => x.Product.ImageUrl).FirstOrDefault(),
-                    AverageRate = g.Average(x => x.Rating),
+                    AverageRated = g.Average(x => x.Rating),
                     TotalFeedbacks = g.Count(),
                     Price = g.Select(x => x.Product.ProductVersions.OrderByDescending(pv => pv.ID).FirstOrDefault().Price).FirstOrDefault(),
                     CategoryName = g.Select(x => x.Product.Category.Name).FirstOrDefault()
                 })
-                .OrderByDescending(x => x.AverageRate)
+                .Take(10)
+                .OrderByDescending(x => x.AverageRated)
                 .ToListAsync();
 
             return data;

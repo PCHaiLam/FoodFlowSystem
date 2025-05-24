@@ -7,7 +7,7 @@ namespace FoodFlowSystem.Repositories.Feedback
 {
     public interface IFeedbackRepository : IBaseRepository<FeedbackEntity>
     {
-        Task<ICollection<FeedbackEntity>> GetFeedbacksAsync(int top);
+        Task<ICollection<FeedbackEntity>> GetFeedbacksAsync(int page, int size);
         Task AddListFeedbacksAsync(ICollection<FeedbackEntity> feedbacks);
         Task<ProductRatedResponse> GetAverageRateAndTotalFeedbacksByProductIdAsync(int productId);
         Task<ICollection<FeedbackEntity>> GetByUserIdAsync(int id);
